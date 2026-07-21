@@ -15,6 +15,7 @@ import { Edit2, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
+import { ConfirmDialog } from "@/components/feedback/confirm-dialog";
 
 export default function SellersListPage() {
   const { hasPermission } = usePermissions();
@@ -29,6 +30,13 @@ export default function SellersListPage() {
 
   // Debounced query state
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Confirmation states
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [targetSeller, setTargetSeller] = useState<{
+    id: string;
+    status: "ACTIVE" | "INACTIVE";
+  } | null>(null);
 
   // Debounce search input
   useEffect(() => {
@@ -62,14 +70,23 @@ export default function SellersListPage() {
     loadSellers();
   }, [page, sort, searchQuery]);
 
-  const handleToggleStatus = async (id: string, currentStatus: "ACTIVE" | "INACTIVE") => {
+  const handleToggleStatus = (id: string, currentStatus: "ACTIVE" | "INACTIVE") => {
     if (!hasPermission(PERMISSIONS.INACTIVATE_SELLER)) return;
+    setTargetSeller({ id, status: currentStatus });
+    setConfirmOpen(true);
+  };
+
+  const executeToggleStatus = async () => {
+    if (!targetSeller) return;
     try {
-      const nextStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-      await SellersService.changeSellerStatus(id, nextStatus);
+      const nextStatus = targetSeller.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+      await SellersService.changeSellerStatus(targetSeller.id, nextStatus);
       loadSellers();
     } catch (err: any) {
       console.error(err.message || "Erro ao alterar status do vendedor.");
+    } finally {
+      setConfirmOpen(false);
+      setTargetSeller(null);
     }
   };
 
@@ -260,6 +277,24 @@ export default function SellersListPage() {
           onPageChange={setPage}
         />
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        title={targetSeller?.status === "ACTIVE" ? "Inativar Vendedor" : "Ativar Vendedor"}
+        message={
+          targetSeller?.status === "ACTIVE"
+            ? "Tem certeza de que deseja inativar este vendedor? Ele não poderá ser associado a novos clientes ou títulos."
+            : "Tem certeza de que deseja ativar este vendedor?"
+        }
+        confirmLabel={targetSeller?.status === "ACTIVE" ? "Inativar" : "Ativar"}
+        cancelLabel="Cancelar"
+        onConfirm={executeToggleStatus}
+        onCancel={() => {
+          setConfirmOpen(false);
+          setTargetSeller(null);
+        }}
+        isDanger={targetSeller?.status === "ACTIVE"}
+      />
     </div>
   );
 }
