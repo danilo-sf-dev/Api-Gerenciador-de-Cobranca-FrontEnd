@@ -9,7 +9,7 @@ import { TableEmptyState } from "@/components/data-table/table-empty-state";
 import { TableLoading } from "@/components/data-table/table-loading";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
-import { Edit2, Plus, Search } from "lucide-react";
+import { Edit2, Plus, Search, XCircle } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
@@ -26,6 +26,77 @@ export default function RolesListPage() {
   const [totalPages, setTotalPages] = useState(0);
 
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Modal States
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const [name, setName] = useState("");
+  const [hierarchyLevel, setHierarchyLevel] = useState(4);
+  const [roleStatus, setRoleStatus] = useState<"ACTIVE" | "INACTIVE">("ACTIVE");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [apiError, setApiError] = useState("");
+
+  const handleOpenCreate = () => {
+    setSelectedRole(null);
+    setName("");
+    setHierarchyLevel(4);
+    setRoleStatus("ACTIVE");
+    setErrors({});
+    setApiError("");
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (role: Role) => {
+    setSelectedRole(role);
+    setName(role.name);
+    setHierarchyLevel(role.hierarchyLevel);
+    setRoleStatus(role.status);
+    setErrors({});
+    setApiError("");
+    setIsModalOpen(true);
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+    setApiError("");
+
+    const newErrors: Record<string, string> = {};
+    if (!name.trim()) newErrors.name = "O nome do cargo é obrigatório.";
+    if (hierarchyLevel < 1 || hierarchyLevel > 10) {
+      newErrors.hierarchyLevel = "O nível hierárquico deve ser entre 1 e 10.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      if (selectedRole) {
+        await RolesService.updateRole(selectedRole.id, {
+          name,
+          hierarchyLevel,
+          status: roleStatus,
+        });
+      } else {
+        await RolesService.createRole({
+          name,
+          hierarchyLevel,
+          status: roleStatus,
+        });
+      }
+      setIsModalOpen(false);
+      loadRoles();
+    } catch (err: any) {
+      setApiError(err.message || "Erro ao salvar cargo.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -57,6 +128,18 @@ export default function RolesListPage() {
     loadRoles();
   }, [page, sort, searchQuery]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsModalOpen(false);
+      }
+    };
+    if (isModalOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isModalOpen]);
+
   const handleToggleStatus = async (
     id: string,
     name: string,
@@ -87,10 +170,13 @@ export default function RolesListPage() {
         </div>
 
         {hasPermission(PERMISSIONS.CREATE_ROLE) && (
-          <Link href={`${ROUTES.ROLES}/novo`} className={`${styles.btn} ${styles.btnPrimary}`}>
+          <button
+            onClick={handleOpenCreate}
+            className={`${styles.btn} ${styles.btnPrimary}`}
+          >
             <Plus size={16} />
             <span>Novo Cargo</span>
-          </Link>
+          </button>
         )}
       </div>
 
@@ -205,14 +291,14 @@ export default function RolesListPage() {
                     <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
                       {/* Only allow editing custom roles, or block fundamental name editing inside the edit page */}
                       {hasPermission(PERMISSIONS.EDIT_ROLE) && (
-                        <Link
-                          href={`${ROUTES.ROLES}/${r.id}/editar`}
+                        <button
+                          onClick={() => handleOpenEdit(r)}
                           className={styles.btn}
-                          style={{ padding: 6, backgroundColor: "transparent", border: "none" }}
+                          style={{ padding: 6, backgroundColor: "transparent", border: "none", cursor: "pointer" }}
                           title="Editar Cargo"
                         >
                           <Edit2 size={16} style={{ color: "var(--colors-accent)" }} />
-                        </Link>
+                        </button>
                       )}
                       {hasPermission(PERMISSIONS.INACTIVATE_ROLE) &&
                         (() => {
@@ -315,6 +401,152 @@ export default function RolesListPage() {
           onPageChange={setPage}
         />
       </div>
+
+      {/* Cargo Create/Edit Modal */}
+      {isModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+          <form
+            onSubmit={handleFormSubmit}
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <span className={styles.modalTitle}>
+                {selectedRole ? `Editar Cargo - ${selectedRole.name}` : "Cadastrar Novo Cargo"}
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className={styles.modalCloseBtn}
+              >
+                <XCircle size={16} />
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>
+              {apiError && (
+                <div
+                  style={{
+                    padding: "8px 10px",
+                    backgroundColor: "var(--status-late-bg)",
+                    border: "1px solid var(--status-late-text)",
+                    borderRadius: "var(--radius-sm)",
+                    fontSize: "0.8125rem",
+                    color: "var(--status-late-text)",
+                    marginBottom: 12,
+                  }}
+                >
+                  {apiError}
+                </div>
+              )}
+
+              {/* Check if editing a fundamental role to disable name editing */}
+              {(() => {
+                const isFundamental = !!(selectedRole && (
+                  selectedRole.name === "Owner" ||
+                  selectedRole.name === "Gerente" ||
+                  selectedRole.name === "Vendedor" ||
+                  selectedRole.name === "Funcionário"
+                ));
+                return (
+                  <>
+                    <div className={styles.inputGroup}>
+                      <label className={styles.label}>Nome do Cargo *</label>
+                      <input
+                        type="text"
+                        className={`${styles.input} ${errors.name ? styles.inputError : ""}`}
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Ex: Gerente Administrativo, Supervisor Regional, etc."
+                        disabled={isFundamental}
+                        style={
+                          isFundamental
+                            ? { backgroundColor: "var(--colors-surface)", color: "var(--colors-muted)" }
+                            : {}
+                        }
+                        required
+                      />
+                      {errors.name && (
+                        <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                          {errors.name}
+                        </span>
+                      )}
+                      {isFundamental && (
+                        <p style={{ fontSize: "0.75rem", color: "var(--colors-muted)", marginTop: 4 }}>
+                          Cargos padrão do sistema não podem ter seus nomes editados.
+                        </p>
+                      )}
+                    </div>
+
+                    <div className={styles.inputGroup} style={{ marginTop: 12 }}>
+                      <label className={styles.label}>Nível Hierárquico *</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={10}
+                        className={`${styles.input} ${errors.hierarchyLevel ? styles.inputError : ""}`}
+                        value={hierarchyLevel}
+                        onChange={(e) => setHierarchyLevel(parseInt(e.target.value) || 0)}
+                        disabled={isFundamental}
+                        style={
+                          isFundamental
+                            ? { backgroundColor: "var(--colors-surface)", color: "var(--colors-muted)" }
+                            : {}
+                        }
+                        required
+                      />
+                      {errors.hierarchyLevel && (
+                        <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                          {errors.hierarchyLevel}
+                        </span>
+                      )}
+                      {isFundamental ? (
+                        <p style={{ fontSize: "0.75rem", color: "var(--colors-muted)", marginTop: 4 }}>
+                          O nível hierárquico de cargos padrão é fixado pelo sistema.
+                        </p>
+                      ) : (
+                        <p style={{ fontSize: "0.75rem", color: "var(--colors-muted)", marginTop: 4 }}>
+                          Digite de 1 (mais alto) a 10 (mais baixo).
+                        </p>
+                      )}
+                    </div>
+
+                    <div className={styles.inputGroup} style={{ marginTop: 12 }}>
+                      <label className={styles.label}>Status</label>
+                      <select
+                        className={styles.input}
+                        value={roleStatus}
+                        onChange={(e) => setRoleStatus(e.target.value as any)}
+                        disabled={!!(isFundamental && selectedRole?.name === "Owner")}
+                      >
+                        <option value="ACTIVE">Ativo</option>
+                        <option value="INACTIVE">Inativo</option>
+                      </select>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className={`${styles.btn} ${styles.btnSecondary}`}
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className={`${styles.btn} ${styles.btnPrimary}`}
+              >
+                {saving ? "Salvando..." : "Confirmar"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

@@ -13,7 +13,7 @@ import { formatCPF } from "@/lib/formatters/cpf";
 import { formatCNPJ } from "@/lib/formatters/cnpj";
 import { formatDate } from "@/lib/formatters/date";
 import { formatCurrency } from "@/lib/formatters/currency";
-import { Search, Eye, Calendar, RotateCcw } from "lucide-react";
+import { Search, Eye, Calendar, RotateCcw, Plus } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
@@ -122,6 +122,7 @@ export default function TitlesListPage() {
 
         {hasPermission(PERMISSIONS.CREATE_TITLE) && (
           <Link href={`${ROUTES.TITLES}/novo`} className={`${styles.btn} ${styles.btnPrimary}`}>
+            <Plus size={16} />
             <span>Novo Título</span>
           </Link>
         )}
