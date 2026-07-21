@@ -6,6 +6,9 @@ import { formatCurrency } from "@/lib/formatters/currency";
 import uiStyles from "@/components/ui/ui.module.css";
 import dashboardStyles from "../dashboard.module.css";
 
+import { Tooltip } from "@/components/ui/tooltip";
+import { TOOLTIPS } from "@/lib/constants/tooltips";
+
 interface DashboardKpiGridProps {
   upcomingSum: number;
   upcomingCount: number;
@@ -30,13 +33,39 @@ export function DashboardKpiGrid({
   return (
     <div className={dashboardStyles.kpiGrid}>
       {/* Upcoming */}
-      <div className={uiStyles.card} style={{ padding: "var(--space-md)" }}>
+      <div
+        className={uiStyles.card}
+        style={{
+          padding: "var(--space-md)",
+          backgroundColor: "var(--status-upcoming-bg)",
+          borderColor: "color-mix(in srgb, var(--status-upcoming-text) 20%, transparent)",
+        }}
+      >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <span className={uiStyles.label}>A Vencer</span>
+          <Tooltip content={TOOLTIPS.dashboard.upcoming}>
+            <span
+              className={uiStyles.label}
+              style={{
+                color: "var(--status-upcoming-text)",
+                cursor: "help",
+                borderBottom:
+                  "1px dashed color-mix(in srgb, var(--status-upcoming-text) 30%, transparent)",
+              }}
+            >
+              A Vencer
+            </span>
+          </Tooltip>
           <TrendingUp size={16} style={{ color: "var(--status-upcoming-text)" }} />
         </div>
         <div style={{ marginTop: 8 }}>
-          <h2 className="tabular-nums" style={{ fontSize: "1.625rem", fontWeight: 700 }}>
+          <h2
+            className="tabular-nums"
+            style={{
+              fontSize: "1.625rem",
+              fontWeight: 700,
+              color: "var(--status-upcoming-text)",
+            }}
+          >
             {formatCurrency(upcomingSum)}
           </h2>
           <p style={{ fontSize: "0.75rem", color: "var(--colors-muted)", marginTop: 4 }}>
@@ -46,13 +75,39 @@ export function DashboardKpiGrid({
       </div>
 
       {/* Overdue */}
-      <div className={uiStyles.card} style={{ padding: "var(--space-md)" }}>
+      <div
+        className={uiStyles.card}
+        style={{
+          padding: "var(--space-md)",
+          backgroundColor: "var(--status-overdue-bg)",
+          borderColor: "color-mix(in srgb, var(--status-overdue-text) 20%, transparent)",
+        }}
+      >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <span className={uiStyles.label}>Vencidos (Tolerância)</span>
+          <Tooltip content={TOOLTIPS.dashboard.overdue}>
+            <span
+              className={uiStyles.label}
+              style={{
+                color: "var(--status-overdue-text)",
+                cursor: "help",
+                borderBottom:
+                  "1px dashed color-mix(in srgb, var(--status-overdue-text) 30%, transparent)",
+              }}
+            >
+              Vencidos (Tolerância)
+            </span>
+          </Tooltip>
           <Clock size={16} style={{ color: "var(--status-overdue-text)" }} />
         </div>
         <div style={{ marginTop: 8 }}>
-          <h2 className="tabular-nums" style={{ fontSize: "1.625rem", fontWeight: 700 }}>
+          <h2
+            className="tabular-nums"
+            style={{
+              fontSize: "1.625rem",
+              fontWeight: 700,
+              color: "var(--status-overdue-text)",
+            }}
+          >
             {formatCurrency(overdueSum)}
           </h2>
           <p style={{ fontSize: "0.75rem", color: "var(--colors-muted)", marginTop: 4 }}>
@@ -62,15 +117,38 @@ export function DashboardKpiGrid({
       </div>
 
       {/* Late */}
-      <div className={uiStyles.card} style={{ padding: "var(--space-md)" }}>
+      <div
+        className={uiStyles.card}
+        style={{
+          padding: "var(--space-md)",
+          backgroundColor: "var(--status-late-bg)",
+          borderColor: "color-mix(in srgb, var(--status-late-text) 20%, transparent)",
+        }}
+      >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <span className={uiStyles.label}>Em Atraso (Cobrança)</span>
+          <Tooltip content={TOOLTIPS.dashboard.late}>
+            <span
+              className={uiStyles.label}
+              style={{
+                color: "var(--status-late-text)",
+                cursor: "help",
+                borderBottom:
+                  "1px dashed color-mix(in srgb, var(--status-late-text) 30%, transparent)",
+              }}
+            >
+              Em Atraso (Cobrança)
+            </span>
+          </Tooltip>
           <AlertTriangle size={16} style={{ color: "var(--status-late-text)" }} />
         </div>
         <div style={{ marginTop: 8 }}>
           <h2
             className="tabular-nums"
-            style={{ fontSize: "1.625rem", fontWeight: 700, color: "var(--status-late-text)" }}
+            style={{
+              fontSize: "1.625rem",
+              fontWeight: 700,
+              color: "var(--status-late-text)",
+            }}
           >
             {formatCurrency(lateSum)}
           </h2>
@@ -81,15 +159,38 @@ export function DashboardKpiGrid({
       </div>
 
       {/* Paid */}
-      <div className={uiStyles.card} style={{ padding: "var(--space-md)" }}>
+      <div
+        className={uiStyles.card}
+        style={{
+          padding: "var(--space-md)",
+          backgroundColor: "var(--status-paid-bg)",
+          borderColor: "color-mix(in srgb, var(--status-paid-text) 20%, transparent)",
+        }}
+      >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <span className={uiStyles.label}>Recebido</span>
+          <Tooltip content={TOOLTIPS.dashboard.paid}>
+            <span
+              className={uiStyles.label}
+              style={{
+                color: "var(--status-paid-text)",
+                cursor: "help",
+                borderBottom:
+                  "1px dashed color-mix(in srgb, var(--status-paid-text) 30%, transparent)",
+              }}
+            >
+              Recebido
+            </span>
+          </Tooltip>
           <CheckCircle2 size={16} style={{ color: "var(--status-paid-text)" }} />
         </div>
         <div style={{ marginTop: 8 }}>
           <h2
             className="tabular-nums"
-            style={{ fontSize: "1.625rem", fontWeight: 700, color: "var(--status-paid-text)" }}
+            style={{
+              fontSize: "1.625rem",
+              fontWeight: 700,
+              color: "var(--status-paid-text)",
+            }}
           >
             {formatCurrency(paidSum)}
           </h2>

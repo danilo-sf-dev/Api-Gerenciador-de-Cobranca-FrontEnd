@@ -35,11 +35,13 @@ O sistema centraliza **clientes, vendedores e o ciclo de vida completo dos títu
 ## Funcionalidades
 
 ### Dashboard Operacional
+
 - Resumo em tempo real de títulos **A Vencer**, **Em Atraso** e **Vencidos**
 - Alertas automáticos de títulos críticos para acompanhamento
 - Visão geral de inadimplência e volume financeiro em aberto
 
 ### Gestão de Títulos (`/titulos`)
+
 - Listagem paginada com filtros por status, período de vencimento e busca textual
 - Ordenação por coluna (valor, vencimento, cliente)
 - Criação manual de títulos com validação de formulário
@@ -52,22 +54,26 @@ O sistema centraliza **clientes, vendedores e o ciclo de vida completo dos títu
 - Importação em lote via arquivo
 
 ### Gestão de Clientes (`/clientes`)
+
 - Cadastro com suporte a **CPF** e **CNPJ** com validação e formatação automática
 - Vinculação obrigatória a um vendedor responsável
 - Edição de dados cadastrais
 
 ### Gestão de Vendedores (`/vendedores`)
+
 - Cadastro com CPF validado, telefone com máscara e e-mail
 - Ativação / Inativação com toggle visual
 - Geração automática de código de vendedor
 
 ### Gestão de Usuários (`/usuarios`)
+
 - Convite de novos usuários por e-mail
 - Visualização de status: `Pendente`, `Ativo`, `Inativo`
 - Troca de cargo com aprovação hierárquica
 - Último acesso rastreado
 
 ### Gestão de Cargos (`/cargos`)
+
 - CRUD completo de cargos com nível hierárquico numérico
 - Bloqueio de inativação para cargos padrão do sistema (`Owner`, `Gerente`)
 - Toggle visual de ativação/inativação
@@ -76,17 +82,17 @@ O sistema centraliza **clientes, vendedores e o ciclo de vida completo dos títu
 
 ## Stack Tecnológica
 
-| Categoria             | Tecnologia                              |
-|-----------------------|-----------------------------------------|
-| Framework             | [Next.js 16](https://nextjs.org/) (App Router) |
-| Linguagem             | [TypeScript 5](https://www.typescriptlang.org/) |
-| UI Library            | [React 19](https://react.dev/)          |
-| Ícones                | [Lucide React](https://lucide.dev/)     |
-| Estilização           | CSS Modules + Vanilla CSS               |
-| Testes E2E            | [Playwright](https://playwright.dev/)   |
-| Formatador            | [Prettier](https://prettier.io/)        |
-| Linter                | [ESLint 9](https://eslint.org/)         |
-| Gerenciador de pacotes| npm                                     |
+| Categoria              | Tecnologia                                      |
+| ---------------------- | ----------------------------------------------- |
+| Framework              | [Next.js 16](https://nextjs.org/) (App Router)  |
+| Linguagem              | [TypeScript 5](https://www.typescriptlang.org/) |
+| UI Library             | [React 19](https://react.dev/)                  |
+| Ícones                 | [Lucide React](https://lucide.dev/)             |
+| Estilização            | CSS Modules + Vanilla CSS                       |
+| Testes E2E             | [Playwright](https://playwright.dev/)           |
+| Formatador             | [Prettier](https://prettier.io/)                |
+| Linter                 | [ESLint 9](https://eslint.org/)                 |
+| Gerenciador de pacotes | npm                                             |
 
 ---
 
@@ -207,6 +213,7 @@ type PaymentMethod = "PIX" | "BOLETO" | "CARD";
 ```
 
 **Campos financeiros calculados automaticamente:**
+
 - `originalAmount` — Valor original do título
 - `updatedAmount` — Valor atualizado (original + multa + juros)
 - `fineAmount` — Multa calculada sobre o atraso
@@ -218,24 +225,24 @@ type PaymentMethod = "PIX" | "BOLETO" | "CARD";
 
 O sistema implementa um modelo de permissões baseado em **hierarquia de cargos**:
 
-| Cargo       | Nível Hierárquico | Descrição                                                      |
-|-------------|-------------------|-----------------------------------------------------------------|
-| Owner       | 1                 | Acesso total; aprova promoções para Gerente                    |
-| Gerente     | 2                 | Gerencia usuários/vendedores e opera títulos                   |
-| Vendedor    | 3                 | Operações CRUD básicas; acesso limitado ao dashboard           |
-| Funcionário | 4                 | Visualização e operações restritas                             |
+| Cargo       | Nível Hierárquico | Descrição                                            |
+| ----------- | ----------------- | ---------------------------------------------------- |
+| Owner       | 1                 | Acesso total; aprova promoções para Gerente          |
+| Gerente     | 2                 | Gerencia usuários/vendedores e opera títulos         |
+| Vendedor    | 3                 | Operações CRUD básicas; acesso limitado ao dashboard |
+| Funcionário | 4                 | Visualização e operações restritas                   |
 
 **Permissões disponíveis no sistema:**
 
 ```typescript
 // Exemplos das permissões disponíveis
-VIEW_DASHBOARD | VIEW_SELLERS | CREATE_SELLER | EDIT_SELLER | INACTIVATE_SELLER
-VIEW_ROLES | CREATE_ROLE | EDIT_ROLE | INACTIVATE_ROLE
-VIEW_USERS | INVITE_USER | RESEND_INVITATION | CANCEL_INVITATION
-CHANGE_USER_ROLE | APPROVE_MANAGER_PROMOTION
-VIEW_CUSTOMERS | CREATE_CUSTOMER | EDIT_CUSTOMER
-VIEW_TITLES | CREATE_TITLE | EDIT_TITLE | CANCEL_TITLE
-REGISTER_PAYMENT | RENEGOTIATE_TITLE | IMPORT_TITLES
+VIEW_DASHBOARD | VIEW_SELLERS | CREATE_SELLER | EDIT_SELLER | INACTIVATE_SELLER;
+VIEW_ROLES | CREATE_ROLE | EDIT_ROLE | INACTIVATE_ROLE;
+VIEW_USERS | INVITE_USER | RESEND_INVITATION | CANCEL_INVITATION;
+CHANGE_USER_ROLE | APPROVE_MANAGER_PROMOTION;
+VIEW_CUSTOMERS | CREATE_CUSTOMER | EDIT_CUSTOMER;
+VIEW_TITLES | CREATE_TITLE | EDIT_TITLE | CANCEL_TITLE;
+REGISTER_PAYMENT | RENEGOTIATE_TITLE | IMPORT_TITLES;
 ```
 
 O hook `usePermissions()` expõe o método `hasPermission(PERMISSIONS.CHAVE)` para verificação inline em qualquer componente.
@@ -303,13 +310,13 @@ O teste `"should login, create a seller, create a customer, and register a manua
 
 ### Configuração do Playwright (`playwright.config.ts`)
 
-| Parâmetro        | Valor                          |
-|------------------|--------------------------------|
-| `baseURL`        | `http://localhost:3000`        |
-| `testDir`        | `./e2e`                        |
-| `workers`        | `1` (sequencial)               |
-| `browser`        | Chromium (Desktop Chrome)      |
-| `webServer`      | `npm run dev` (auto-start)     |
+| Parâmetro   | Valor                      |
+| ----------- | -------------------------- |
+| `baseURL`   | `http://localhost:3000`    |
+| `testDir`   | `./e2e`                    |
+| `workers`   | `1` (sequencial)           |
+| `browser`   | Chromium (Desktop Chrome)  |
+| `webServer` | `npm run dev` (auto-start) |
 
 ---
 
@@ -341,8 +348,8 @@ npx tsc --noEmit
 
 ## Fluxo de Branches
 
-| Branch      | Propósito                                                  |
-|-------------|-------------------------------------------------------------|
+| Branch      | Propósito                                                   |
+| ----------- | ----------------------------------------------------------- |
 | `master`    | Branch principal, reflete o estado estável de produção      |
 | `developer` | Branch de integração contínua para desenvolvimento ativo    |
 | `feature/*` | Branches de funcionalidades criadas a partir de `developer` |
@@ -365,26 +372,26 @@ O Trustee Ledger adota um sistema de design chamado **"The Trustee Ledger"** —
 
 ### Paleta de Cores
 
-| Token              | Hex         | Uso                                                  |
-|--------------------|-------------|-------------------------------------------------------|
-| Primary (Crimson)  | `#d21c38`   | Botões primários, navegação ativa, alertas críticos   |
-| Neutral BG         | `#ffffff`   | Fundo principal da aplicação                          |
-| Surface            | `#f8f9fa`   | Fundo de cards, tabelas e toolbars                    |
-| Border             | `#e9ecef`   | Separadores, bordas de linhas e seções                |
-| Ink (texto)        | `#1a1a1a`   | Texto de alto contraste                               |
-| Muted (texto)      | `#6c757d`   | Metadados, legendas e labels secundários              |
-| Accent (Azul)      | `#1c3d5a`   | Badges informativos e status pills                    |
+| Token             | Hex       | Uso                                                 |
+| ----------------- | --------- | --------------------------------------------------- |
+| Primary (Crimson) | `#d21c38` | Botões primários, navegação ativa, alertas críticos |
+| Neutral BG        | `#ffffff` | Fundo principal da aplicação                        |
+| Surface           | `#f8f9fa` | Fundo de cards, tabelas e toolbars                  |
+| Border            | `#e9ecef` | Separadores, bordas de linhas e seções              |
+| Ink (texto)       | `#1a1a1a` | Texto de alto contraste                             |
+| Muted (texto)     | `#6c757d` | Metadados, legendas e labels secundários            |
+| Accent (Azul)     | `#1c3d5a` | Badges informativos e status pills                  |
 
 ### Status dos Títulos (Badges)
 
-| Status       | Cor visual    |
-|--------------|---------------|
-| A Vencer     | Índigo        |
-| Vencido      | Âmbar         |
-| Atraso       | Vermelho      |
-| Pago         | Verde         |
-| Cancelado    | Cinza escuro  |
-| Renegociado  | Roxo          |
+| Status      | Cor visual   |
+| ----------- | ------------ |
+| A Vencer    | Índigo       |
+| Vencido     | Âmbar        |
+| Atraso      | Vermelho     |
+| Pago        | Verde        |
+| Cancelado   | Cinza escuro |
+| Renegociado | Roxo         |
 
 ### Princípios de Design
 

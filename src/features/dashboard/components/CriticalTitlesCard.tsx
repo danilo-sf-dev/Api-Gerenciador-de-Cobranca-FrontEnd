@@ -144,7 +144,10 @@ export function CriticalTitlesCard({ recentLate }: CriticalTitlesCardProps) {
                         padding: "12px 4px",
                         textAlign: "right",
                         fontWeight: 600,
-                        color: "var(--status-late-text)",
+                        color:
+                          t.status === "LATE"
+                            ? "var(--status-late-text)"
+                            : "var(--status-overdue-text)",
                         fontFamily: "var(--font-mono)",
                       }}
                     >
@@ -197,64 +200,81 @@ export function CriticalTitlesCard({ recentLate }: CriticalTitlesCardProps) {
             Excelente! Nenhum título vencido ou em atraso.
           </div>
         ) : (
-          recentLate.map((t) => (
-            <div key={t.id} className={dashboardStyles.mobileCard}>
-              <div className={dashboardStyles.mobileCardHeader}>
-                <div>
-                  <div className={dashboardStyles.mobileCardTitle}>{t.customerName}</div>
-                  <div className={dashboardStyles.mobileCardSubtitle}>Vendedor: {t.sellerName}</div>
+          recentLate.map((t) => {
+            const isLate = t.status === "LATE";
+            const badgeClass = isLate ? uiStyles.badgeLate : uiStyles.badgeOverdue;
+            const cardBg = isLate ? "var(--status-late-bg)" : "var(--status-overdue-bg)";
+            const cardBorder = isLate
+              ? "color-mix(in srgb, var(--status-late-text) 15%, transparent)"
+              : "color-mix(in srgb, var(--status-overdue-text) 15%, transparent)";
+            return (
+              <div
+                key={t.id}
+                className={dashboardStyles.mobileCard}
+                style={{
+                  backgroundColor: cardBg,
+                  borderColor: cardBorder,
+                }}
+              >
+                <div className={dashboardStyles.mobileCardHeader}>
+                  <div>
+                    <div className={dashboardStyles.mobileCardTitle}>{t.customerName}</div>
+                    <div className={dashboardStyles.mobileCardSubtitle}>
+                      Vendedor: {t.sellerName}
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className={dashboardStyles.mobileCardBody}>
-                <div className={dashboardStyles.mobileCardRow}>
-                  <span className={dashboardStyles.mobileCardLabel}>Vencimento</span>
-                  <span className={dashboardStyles.mobileCardValue}>
-                    {new Date(t.dueDate).toLocaleDateString("pt-BR")}
-                  </span>
+                <div className={dashboardStyles.mobileCardBody}>
+                  <div className={dashboardStyles.mobileCardRow}>
+                    <span className={dashboardStyles.mobileCardLabel}>Vencimento</span>
+                    <span className={dashboardStyles.mobileCardValue}>
+                      {new Date(t.dueDate).toLocaleDateString("pt-BR")}
+                    </span>
+                  </div>
+                  <div className={dashboardStyles.mobileCardRow}>
+                    <span className={dashboardStyles.mobileCardLabel}>Valor Original</span>
+                    <span className={dashboardStyles.mobileCardValue}>
+                      {formatCurrency(t.originalAmount)}
+                    </span>
+                  </div>
+                  <div className={dashboardStyles.mobileCardRow}>
+                    <span className={dashboardStyles.mobileCardLabel}>Valor Atualizado</span>
+                    <span
+                      className={`${uiStyles.badge} ${badgeClass} ${dashboardStyles.mobileCardBadge}`}
+                    >
+                      {formatCurrency(t.updatedAmount)}
+                    </span>
+                  </div>
                 </div>
-                <div className={dashboardStyles.mobileCardRow}>
-                  <span className={dashboardStyles.mobileCardLabel}>Valor Original</span>
-                  <span className={dashboardStyles.mobileCardValue}>
-                    {formatCurrency(t.originalAmount)}
-                  </span>
-                </div>
-                <div className={dashboardStyles.mobileCardRow}>
-                  <span className={dashboardStyles.mobileCardLabel}>Valor Atualizado</span>
-                  <span
-                    className={`${uiStyles.badge} ${uiStyles.badgeLate} ${dashboardStyles.mobileCardBadge}`}
+
+                <div className={dashboardStyles.mobileCardFooter}>
+                  <Link
+                    href={`${ROUTES.TITLES}/${t.id}`}
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: 600,
+                      color: "var(--colors-ink)",
+                      padding: "6px 12px",
+                      border: "1px solid var(--colors-border)",
+                      borderRadius: "var(--radius-sm)",
+                      backgroundColor: "var(--colors-surface)",
+                      textDecoration: "none",
+                      transition: "background-color 0.2s",
+                    }}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.backgroundColor = "var(--colors-border)")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.backgroundColor = "var(--colors-surface)")
+                    }
                   >
-                    {formatCurrency(t.updatedAmount)}
-                  </span>
+                    Gerenciar
+                  </Link>
                 </div>
               </div>
-
-              <div className={dashboardStyles.mobileCardFooter}>
-                <Link
-                  href={`${ROUTES.TITLES}/${t.id}`}
-                  style={{
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    color: "var(--colors-ink)",
-                    padding: "6px 12px",
-                    border: "1px solid var(--colors-border)",
-                    borderRadius: "var(--radius-sm)",
-                    backgroundColor: "var(--colors-surface)",
-                    textDecoration: "none",
-                    transition: "background-color 0.2s",
-                  }}
-                  onMouseOver={(e) =>
-                    (e.currentTarget.style.backgroundColor = "var(--colors-border)")
-                  }
-                  onMouseOut={(e) =>
-                    (e.currentTarget.style.backgroundColor = "var(--colors-surface)")
-                  }
-                >
-                  Gerenciar
-                </Link>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

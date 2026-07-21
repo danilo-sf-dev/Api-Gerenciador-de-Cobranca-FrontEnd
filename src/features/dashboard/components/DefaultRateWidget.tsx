@@ -3,6 +3,8 @@
 import React from "react";
 import uiStyles from "@/components/ui/ui.module.css";
 import dashboardStyles from "../dashboard.module.css";
+import { Tooltip } from "@/components/ui/tooltip";
+import { TOOLTIPS } from "@/lib/constants/tooltips";
 
 interface DefaultRateWidgetProps {
   upcomingSum: number;
@@ -32,7 +34,17 @@ export function DefaultRateWidget({
 
   return (
     <div className={dashboardStyles.delinquencyWidget}>
-      <span className={uiStyles.label}>Índice de Inadimplência</span>
+      <Tooltip content={TOOLTIPS.dashboard.defaultRate}>
+        <span
+          className={uiStyles.label}
+          style={{
+            cursor: "help",
+            borderBottom: "1px dashed color-mix(in srgb, var(--colors-muted) 30%, transparent)",
+          }}
+        >
+          Índice de Inadimplência
+        </span>
+      </Tooltip>
       <h2
         className="tabular-nums"
         style={{
