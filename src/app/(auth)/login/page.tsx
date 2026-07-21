@@ -95,7 +95,7 @@ export default function LoginPage() {
               margin: "0 auto 12px auto",
             }}
           />
-          <h2 style={{ fontSize: "1.25rem", fontWeight: 700 }}>Entrar no Trustee Ledger</h2>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: 700 }}>Entrar no Gestão Finance</h2>
           <p style={{ fontSize: "0.875rem", color: "var(--colors-muted)", marginTop: 4 }}>
             Acesso restrito para administradores e colaboradores
           </p>
