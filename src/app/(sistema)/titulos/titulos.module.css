@@ -1,0 +1,121 @@
+.filterSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.filtersGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: var(--space-md);
+  align-items: flex-end;
+}
+
+@media (max-width: 768px) {
+  .filtersGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.statusFilterBar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.statusFilterLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--colors-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.statusBadgesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.filterBadge {
+  border: 1px solid var(--colors-border);
+  background-color: var(--colors-bg);
+  color: var(--colors-muted);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease-in-out;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.filterBadge:hover {
+  border-color: var(--colors-muted);
+  color: var(--colors-ink);
+}
+
+/* Selected states mapping directly to design system token colors */
+.filterBadgeActiveUpcoming {
+  background-color: var(--status-upcoming-bg);
+  border-color: var(--status-upcoming-text);
+  color: var(--status-upcoming-text);
+}
+
+.filterBadgeActiveOverdue {
+  background-color: var(--status-overdue-bg);
+  border-color: var(--status-overdue-text);
+  color: var(--status-overdue-text);
+}
+
+.filterBadgeActiveLate {
+  background-color: var(--status-late-bg);
+  border-color: var(--status-late-text);
+  color: var(--status-late-text);
+}
+
+.filterBadgeActivePaid {
+  background-color: var(--status-paid-bg);
+  border-color: var(--status-paid-text);
+  color: var(--status-paid-text);
+}
+
+.filterBadgeActiveCanceled {
+  background-color: var(--status-canceled-bg);
+  border-color: var(--status-canceled-text);
+  color: var(--status-canceled-text);
+}
+
+.filterBadgeActiveRenegotiated {
+  background-color: var(--status-renegotiated-bg);
+  border-color: var(--status-renegotiated-text);
+  color: var(--status-renegotiated-text);
+}
+
+.codeCell {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--colors-accent);
+}
+
+.actionBtn {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--colors-surface);
+  border: 1px solid var(--colors-border);
+  color: var(--colors-ink);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.actionBtn:hover {
+  background-color: var(--colors-accent);
+  color: var(--colors-bg);
+  border-color: var(--colors-accent);
+}

@@ -1,0 +1,271 @@
+/* Trustee Ledger Primitives CSS */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+  gap: var(--space-xs);
+  text-decoration: none;
+}
+
+.btnPrimary {
+  background-color: var(--colors-primary);
+  color: var(--colors-bg);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background-color: var(--colors-primary-hover);
+}
+
+.btnSecondary {
+  background-color: var(--colors-surface);
+  border-color: var(--colors-border);
+  color: var(--colors-ink);
+}
+
+.btnSecondary:hover:not(:disabled) {
+  background-color: var(--colors-border);
+}
+
+.btnDanger {
+  background-color: var(--status-late-bg);
+  border-color: var(--status-late-text);
+  color: var(--status-late-text);
+}
+
+.btnDanger:hover:not(:disabled) {
+  background-color: var(--status-late-text);
+  color: var(--colors-bg);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Card Container */
+.card {
+  background-color: var(--colors-bg);
+  border: 1px solid var(--colors-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* Inputs & Form Fields */
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  width: 100%;
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--colors-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  border: 1px solid var(--colors-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--colors-bg);
+  color: var(--colors-ink);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.input:focus {
+  border-color: var(--colors-accent);
+  outline: none;
+}
+
+.inputError {
+  border-color: var(--status-late-text);
+}
+
+.errorText {
+  font-size: 0.75rem;
+  color: var(--status-late-text);
+  font-weight: 500;
+}
+
+/* Status Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 12px;
+  gap: var(--space-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.badgeUpcoming {
+  background-color: var(--status-upcoming-bg);
+  color: var(--status-upcoming-text);
+}
+
+.badgeOverdue {
+  background-color: var(--status-overdue-bg);
+  color: var(--status-overdue-text);
+}
+
+.badgeLate {
+  background-color: var(--status-late-bg);
+  color: var(--status-late-text);
+}
+
+.badgePaid {
+  background-color: var(--status-paid-bg);
+  color: var(--status-paid-text);
+}
+
+.badgeCanceled {
+  background-color: var(--status-canceled-bg);
+  color: var(--status-canceled-text);
+}
+
+.badgeRenegotiated {
+  background-color: var(--status-renegotiated-bg);
+  color: var(--status-renegotiated-text);
+}
+
+/* Modal Overlay & Box */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-md);
+}
+
+.modalContent {
+  background-color: var(--colors-bg);
+  border: 1px solid var(--colors-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-alert);
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalEnter 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modalHeader {
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--colors-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modalTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.modalCloseBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--colors-muted);
+}
+
+.modalCloseBtn:hover {
+  color: var(--colors-ink);
+}
+
+.modalBody {
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modalFooter {
+  padding: var(--space-md) var(--space-lg);
+  border-top: 1px solid var(--colors-border);
+  background-color: var(--colors-surface);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}
+
+/* Tooltip & Popover */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltipContent {
+  visibility: hidden;
+  width: 200px;
+  background-color: var(--colors-accent);
+  color: var(--colors-bg);
+  text-align: center;
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-sm);
+  position: absolute;
+  z-index: 100;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -100px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  font-size: 0.75rem;
+  box-shadow: var(--shadow-alert);
+}
+
+.tooltip:hover .tooltipContent {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Badges list row helper */
+.badgeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}

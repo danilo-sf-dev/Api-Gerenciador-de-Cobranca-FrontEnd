@@ -1,0 +1,277 @@
+.grid4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+}
+
+@media (max-width: 1024px) {
+  .grid4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .grid4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.grid2Collapse {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+}
+
+@media (max-width: 768px) {
+  .grid2Collapse {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid var(--colors-border);
+  padding-bottom: var(--space-xs);
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--colors-ink);
+}
+
+.infoBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.infoLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--colors-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.infoValue {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--colors-ink);
+}
+
+.infoValueMono {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--colors-ink);
+}
+
+/* History Timeline Log */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-left: 24px;
+  margin-top: var(--space-sm);
+}
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 7px;
+  width: 2px;
+  background-color: var(--colors-border);
+}
+
+.timelineItem {
+  position: relative;
+  padding-bottom: var(--space-md);
+}
+
+.timelineItem:last-child {
+  padding-bottom: 0;
+}
+
+.timelineDot {
+  position: absolute;
+  left: -24px;
+  top: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--colors-bg);
+  border: 2px solid var(--colors-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.timelineDotActive {
+  border-color: var(--colors-primary);
+  background-color: var(--colors-primary-light);
+}
+
+.timelineContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.timelineHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.timelineReason {
+  font-size: 0.875rem;
+  color: var(--colors-ink);
+  font-weight: 500;
+}
+
+.timelineMeta {
+  font-size: 0.75rem;
+  color: var(--colors-muted);
+}
+
+/* Visual Renegotiation Tree */
+.treeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-lg) 0;
+  width: 100%;
+}
+
+.treeNode {
+  background-color: var(--colors-bg);
+  border: 1px solid var(--colors-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  min-width: 260px;
+  max-width: 320px;
+  transition: all 0.15s ease-in-out;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  cursor: pointer;
+  position: relative;
+}
+
+.treeNode:hover {
+  border-color: var(--colors-accent);
+  box-shadow: var(--shadow-alert);
+}
+
+.treeNodeActive {
+  border: 2px solid var(--colors-primary);
+  background-color: oklch(0.99 0.002 355.3);
+}
+
+.treeNodeTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--colors-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.treeNodeCode {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--colors-ink);
+}
+
+.treeNodeValue {
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--colors-ink);
+  margin: var(--space-xs) 0;
+}
+
+.treeNodeMeta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--colors-muted);
+}
+
+.treeConnector {
+  width: 2px;
+  height: 24px;
+  background-color: var(--colors-border);
+  position: relative;
+}
+
+.treeConnector::after {
+  content: "▼";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  color: var(--colors-muted);
+}
+
+.treeChildrenGrid {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+  width: 100%;
+  position: relative;
+}
+
+.treeChildrenGrid::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 15%;
+  right: 15%;
+  height: 2px;
+  background-color: var(--colors-border);
+}
+
+.treeChildWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.treeChildConnector {
+  width: 2px;
+  height: 12px;
+  background-color: var(--colors-border);
+}
+
+/* ActionBar */
+.actionBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--colors-border);
+  padding-bottom: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}

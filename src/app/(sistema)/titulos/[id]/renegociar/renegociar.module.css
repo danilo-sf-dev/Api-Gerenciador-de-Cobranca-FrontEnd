@@ -1,0 +1,161 @@
+.renegCard {
+  background-color: var(--colors-bg);
+  border: 1px solid var(--colors-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+@media (max-width: 768px) {
+  .summaryGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.summaryBox {
+  padding: var(--space-md);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--colors-border);
+  background-color: var(--colors-surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.summaryBoxActive {
+  border-color: var(--colors-primary);
+  background-color: var(--colors-primary-light);
+}
+
+.summaryLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--colors-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summaryValue {
+  font-size: 1.375rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--colors-ink);
+}
+
+.differenceWarning {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--status-late-text);
+  margin-top: 2px;
+}
+
+.differenceSuccess {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--status-paid-text);
+  margin-top: 2px;
+}
+
+.instRow {
+  display: grid;
+  grid-template-columns: 80px 1.5fr 1.5fr 60px;
+  gap: var(--space-md);
+  align-items: center;
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--colors-border);
+}
+
+@media (max-width: 640px) {
+  .instRow {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+    padding: var(--space-md) 0;
+  }
+}
+
+.instHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--colors-border);
+  padding-bottom: var(--space-xs);
+}
+
+.instTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--colors-ink);
+}
+
+.instList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: var(--space-xs);
+}
+
+.removeBtn {
+  background: none;
+  border: 1px solid var(--status-late-text);
+  border-radius: var(--radius-sm);
+  color: var(--status-late-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  transition: all 0.15s;
+}
+
+.removeBtn:hover {
+  background-color: var(--status-late-text);
+  color: var(--colors-bg);
+}
+
+.removeBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: var(--colors-border);
+  color: var(--colors-muted);
+}
+
+.grid2Collapse {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: var(--space-lg);
+}
+
+@media (max-width: 900px) {
+  .grid2Collapse {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid var(--colors-border);
+  padding-bottom: var(--space-xs);
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--colors-ink);
+}

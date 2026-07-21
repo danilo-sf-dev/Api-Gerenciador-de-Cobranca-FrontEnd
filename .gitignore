@@ -1,5 +1,6 @@
 # development-agents pack (instalacao local — nao versionar)
 development-agents/
+docs/
 
 # Adapters IDE (gerados na instalacao)
 .cursor/
@@ -51,3 +52,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

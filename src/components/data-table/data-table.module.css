@@ -1,0 +1,172 @@
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--colors-border);
+  border-radius: var(--radius-md);
+  background-color: var(--colors-bg);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.thead {
+  background-color: var(--colors-surface);
+  border-bottom: 1px solid var(--colors-border);
+}
+
+.th {
+  padding: var(--space-md);
+  font-weight: 600;
+  color: var(--colors-muted);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+
+.thSortable {
+  cursor: pointer;
+}
+
+.thSortable:hover {
+  background-color: var(--colors-border);
+  color: var(--colors-ink);
+}
+
+.sortIcon {
+  display: inline-flex;
+  align-items: center;
+  margin-left: var(--space-xs);
+  vertical-align: middle;
+}
+
+.tr {
+  border-bottom: 1px solid var(--colors-border);
+  transition: background-color 0.15s;
+}
+
+.tr:hover {
+  background-color: oklch(0.99 0 0);
+}
+
+.tr:last-child {
+  border-bottom: none;
+}
+
+.td {
+  padding: var(--space-md);
+  color: var(--colors-ink);
+  vertical-align: middle;
+}
+
+/* Pagination container */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md);
+  border-top: 1px solid var(--colors-border);
+  background-color: var(--colors-bg);
+  font-size: 0.8125rem;
+  color: var(--colors-muted);
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.paginationButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.pageBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 var(--space-xs);
+  border: 1px solid var(--colors-border);
+  background-color: var(--colors-bg);
+  color: var(--colors-ink);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background-color: var(--colors-surface);
+  border-color: var(--colors-muted);
+}
+
+.pageBtnActive {
+  background-color: var(--colors-primary);
+  border-color: var(--colors-primary);
+  color: var(--colors-bg);
+}
+
+.pageBtnActive:hover:not(:disabled) {
+  background-color: var(--colors-primary-hover);
+  border-color: var(--colors-primary-hover);
+  color: var(--colors-bg);
+}
+
+.pageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+  color: var(--colors-muted);
+  gap: var(--space-sm);
+}
+
+.emptyTitle {
+  font-weight: 600;
+  color: var(--colors-ink);
+  font-size: 1rem;
+}
+
+/* Loading Skeleton */
+.skeletonRow {
+  height: 52px;
+  border-bottom: 1px solid var(--colors-border);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-md);
+  gap: var(--space-md);
+}
+
+.skeletonCell {
+  height: 16px;
+  background-color: var(--colors-surface);
+  border-radius: var(--radius-sm);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
