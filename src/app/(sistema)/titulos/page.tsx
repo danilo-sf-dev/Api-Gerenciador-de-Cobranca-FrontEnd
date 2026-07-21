@@ -247,30 +247,10 @@ export default function TitlesListPage() {
       </div>
 
       {/* Data Table */}
-      <div
-        style={{
-          border: "1px solid var(--colors-border)",
-          borderRadius: "var(--radius-md)",
-          backgroundColor: "var(--colors-bg)",
-          overflow: "hidden",
-        }}
-      >
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              fontSize: "0.875rem",
-              textAlign: "left",
-            }}
-          >
-            <thead
-              style={{
-                backgroundColor: "var(--colors-surface)",
-                borderBottom: "1px solid var(--colors-border)",
-              }}
-            >
-              <tr>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
                 <SortableHeader label="Código" field="id" currentSort={sort} onSort={setSort} />
                 <SortableHeader
                   label="Cliente / Documento"
@@ -393,7 +373,6 @@ export default function TitlesListPage() {
               )}
             </tbody>
           </table>
-        </div>
 
         <Pagination
           page={page}

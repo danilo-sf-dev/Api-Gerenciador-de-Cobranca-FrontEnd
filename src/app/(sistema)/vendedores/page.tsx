@@ -127,29 +127,9 @@ export default function SellersListPage() {
       </div>
 
       {/* Table Container */}
-      <div
-        style={{
-          border: "1px solid var(--colors-border)",
-          borderRadius: "var(--radius-md)",
-          backgroundColor: "var(--colors-bg)",
-          overflow: "hidden",
-        }}
-      >
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              fontSize: "0.875rem",
-              textAlign: "left",
-            }}
-          >
-            <thead
-              style={{
-                backgroundColor: "var(--colors-surface)",
-                borderBottom: "1px solid var(--colors-border)",
-              }}
-            >
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
               <tr>
                 <SortableHeader label="Código" field="code" currentSort={sort} onSort={setSort} />
                 <SortableHeader label="Nome" field="name" currentSort={sort} onSort={setSort} />
@@ -232,7 +212,6 @@ export default function SellersListPage() {
               )}
             </tbody>
           </table>
-        </div>
 
         <Pagination
           page={page}

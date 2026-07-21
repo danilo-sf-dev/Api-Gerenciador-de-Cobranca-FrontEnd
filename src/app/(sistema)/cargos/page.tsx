@@ -131,30 +131,10 @@ export default function RolesListPage() {
       </div>
 
       {/* Table Container */}
-      <div
-        style={{
-          border: "1px solid var(--colors-border)",
-          borderRadius: "var(--radius-md)",
-          backgroundColor: "var(--colors-bg)",
-          overflow: "hidden",
-        }}
-      >
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              fontSize: "0.875rem",
-              textAlign: "left",
-            }}
-          >
-            <thead
-              style={{
-                backgroundColor: "var(--colors-surface)",
-                borderBottom: "1px solid var(--colors-border)",
-              }}
-            >
-              <tr>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
                 <SortableHeader
                   label="Nome do Cargo"
                   field="name"
@@ -289,7 +269,6 @@ export default function RolesListPage() {
               )}
             </tbody>
           </table>
-        </div>
 
         <Pagination
           page={page}

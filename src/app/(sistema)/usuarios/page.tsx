@@ -294,30 +294,10 @@ export default function UsersListPage() {
       </div>
 
       {/* Users table */}
-      <div
-        style={{
-          border: "1px solid var(--colors-border)",
-          borderRadius: "var(--radius-md)",
-          backgroundColor: "var(--colors-bg)",
-          overflow: "hidden",
-        }}
-      >
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              fontSize: "0.875rem",
-              textAlign: "left",
-            }}
-          >
-            <thead
-              style={{
-                backgroundColor: "var(--colors-surface)",
-                borderBottom: "1px solid var(--colors-border)",
-              }}
-            >
-              <tr>
+      <div className={styles.tableWrapper}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
                 <SortableHeader label="Usuário" field="name" currentSort={sort} onSort={setSort} />
                 <th className={styles.th}>Cargo / Perfil</th>
                 <SortableHeader label="Status" field="status" currentSort={sort} onSort={setSort} />
@@ -426,7 +406,6 @@ export default function UsersListPage() {
               )}
             </tbody>
           </table>
-        </div>
 
         <Pagination
           page={userPage}
@@ -443,30 +422,10 @@ export default function UsersListPage() {
           Histórico de Alterações Hierárquicas & Auditoria
         </h3>
 
-        <div
-          style={{
-            border: "1px solid var(--colors-border)",
-            borderRadius: "var(--radius-md)",
-            backgroundColor: "var(--colors-bg)",
-            overflow: "hidden",
-          }}
-        >
-          <div style={{ overflowX: "auto" }}>
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                fontSize: "0.875rem",
-                textAlign: "left",
-              }}
-            >
-              <thead
-                style={{
-                  backgroundColor: "var(--colors-surface)",
-                  borderBottom: "1px solid var(--colors-border)",
-                }}
-              >
-                <tr>
+        <div className={styles.tableWrapper}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
                   <th className={styles.th}>Data da Alteração</th>
                   <th className={styles.th}>Usuário</th>
                   <th className={styles.th}>Transição</th>
@@ -541,7 +500,6 @@ export default function UsersListPage() {
                 )}
               </tbody>
             </table>
-          </div>
 
           <Pagination
             page={historyPage}
