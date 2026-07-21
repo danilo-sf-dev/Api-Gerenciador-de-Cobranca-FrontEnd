@@ -1,0 +1,12 @@
+.next
+node_modules
+package-lock.json
+public
+.cursor
+.claude
+.gemini
+.agents
+.codex
+.kiro
+development-agents
+sdd
