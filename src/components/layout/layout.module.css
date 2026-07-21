@@ -162,3 +162,138 @@
   font-size: 0.75rem;
   color: var(--colors-muted);
 }
+
+.closeButton {
+  display: none;
+}
+
+.menuButton {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--colors-ink);
+  padding: var(--space-xs);
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s;
+}
+
+.menuButton:hover {
+  background-color: var(--colors-border);
+}
+
+.themeToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--colors-border);
+  border-radius: var(--radius-sm);
+  color: var(--colors-ink);
+  padding: 6px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+
+.themeToggle:hover {
+  background-color: var(--colors-surface);
+  border-color: var(--colors-muted);
+}
+
+.backdrop {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .menuButton {
+    display: flex;
+    margin-right: var(--space-sm);
+  }
+
+  .closeButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--colors-muted);
+    padding: var(--space-xs);
+    border-radius: var(--radius-sm);
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+
+  .closeButton:hover {
+    background-color: var(--colors-border);
+    color: var(--colors-ink);
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--sidebar-width);
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 100;
+    box-shadow: var(--shadow-alert);
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+  }
+
+  .main {
+    margin-left: 0 !important;
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(26, 26, 26, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 95;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .content {
+    padding: var(--space-md);
+  }
+
+  /* Compact header on mobile */
+  .header {
+    padding: 0 var(--space-md);
+  }
+
+  .roleSelector {
+    padding: var(--space-xs);
+  }
+
+  .roleSelector span {
+    display: none; /* Hide labels on mobile to save space */
+  }
+
+  .userInfo {
+    display: none; /* Hide user email/name in header on mobile */
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

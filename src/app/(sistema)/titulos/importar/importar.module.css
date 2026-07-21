@@ -134,7 +134,7 @@
 }
 
 .rejectedRow:hover {
-  background-color: oklch(0.94 0.06 20) !important;
+  background-color: var(--status-late-bg-hover) !important;
 }
 
 .cellReason {

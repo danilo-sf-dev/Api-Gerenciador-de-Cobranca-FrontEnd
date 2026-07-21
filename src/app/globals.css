@@ -22,6 +22,7 @@
 
   --status-late-bg: oklch(0.96 0.05 20);
   --status-late-text: oklch(0.45 0.2 20);
+  --status-late-bg-hover: oklch(0.94 0.06 20);
 
   --status-paid-bg: oklch(0.95 0.04 140);
   --status-paid-text: oklch(0.35 0.12 140);
@@ -52,6 +53,69 @@
   /* Layout variables */
   --sidebar-width: 260px;
   --header-height: 60px;
+}
+
+/* Dark theme variables */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --colors-bg: oklch(0.15 0.01 250);
+    --colors-surface: oklch(0.18 0.01 250);
+    --colors-border: oklch(0.25 0.01 250);
+    --colors-ink: oklch(0.95 0.01 250);
+    --colors-muted: oklch(0.65 0.01 250);
+    --colors-accent: oklch(0.85 0.05 250);
+
+    --colors-primary-light: oklch(0.25 0.08 355.3);
+
+    --status-upcoming-bg: oklch(0.22 0.05 250);
+    --status-upcoming-text: oklch(0.75 0.12 250);
+
+    --status-overdue-bg: oklch(0.25 0.06 75);
+    --status-overdue-text: oklch(0.8 0.12 75);
+
+    --status-late-bg: oklch(0.25 0.07 20);
+    --status-late-text: oklch(0.8 0.15 20);
+    --status-late-bg-hover: oklch(0.28 0.08 20);
+
+    --status-paid-bg: oklch(0.22 0.05 140);
+    --status-paid-text: oklch(0.75 0.12 140);
+
+    --status-canceled-bg: oklch(0.22 0.01 0);
+    --status-canceled-text: oklch(0.7 0.01 0);
+
+    --status-renegotiated-bg: oklch(0.24 0.05 300);
+    --status-renegotiated-text: oklch(0.8 0.12 300);
+  }
+}
+
+[data-theme="dark"] {
+  --colors-bg: oklch(0.15 0.01 250);
+  --colors-surface: oklch(0.18 0.01 250);
+  --colors-border: oklch(0.25 0.01 250);
+  --colors-ink: oklch(0.95 0.01 250);
+  --colors-muted: oklch(0.65 0.01 250);
+  --colors-accent: oklch(0.85 0.05 250);
+
+  --colors-primary-light: oklch(0.25 0.08 355.3);
+
+  --status-upcoming-bg: oklch(0.22 0.05 250);
+  --status-upcoming-text: oklch(0.75 0.12 250);
+
+  --status-overdue-bg: oklch(0.25 0.06 75);
+  --status-overdue-text: oklch(0.8 0.12 75);
+
+  --status-late-bg: oklch(0.25 0.07 20);
+  --status-late-text: oklch(0.8 0.15 20);
+  --status-late-bg-hover: oklch(0.28 0.08 20);
+
+  --status-paid-bg: oklch(0.22 0.05 140);
+  --status-paid-text: oklch(0.75 0.12 140);
+
+  --status-canceled-bg: oklch(0.22 0.01 0);
+  --status-canceled-text: oklch(0.7 0.01 0);
+
+  --status-renegotiated-bg: oklch(0.24 0.05 300);
+  --status-renegotiated-text: oklch(0.8 0.12 300);
 }
 
 /* CSS Reset */

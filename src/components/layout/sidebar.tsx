@@ -3,13 +3,18 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Users, Briefcase, Shield, UserCog, LogOut } from "lucide-react";
+import { LayoutDashboard, FileText, Users, Briefcase, Shield, UserCog, LogOut, X } from "lucide-react";
 import { ROUTES } from "@/lib/constants/routes";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { useAuth } from "@/features/auth/context/auth-context";
 import styles from "./layout.module.css";
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { hasPermission, logout } = useAuth();
 
@@ -53,17 +58,22 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className={styles.sidebar}>
+    <aside className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : ""}`}>
       <div className={styles.logoArea}>
-        <div
-          style={{
-            width: 10,
-            height: 10,
-            borderRadius: "50%",
-            backgroundColor: "var(--colors-primary)",
-          }}
-        />
-        <span className={styles.logoText}>Trustee Ledger</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--space-sm)", flex: 1 }}>
+          <div
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: "50%",
+              backgroundColor: "var(--colors-primary)",
+            }}
+          />
+          <span className={styles.logoText}>Trustee Ledger</span>
+        </div>
+        <button onClick={onClose} className={styles.closeButton} aria-label="Fechar menu">
+          <X size={18} />
+        </button>
       </div>
       <nav className={styles.nav}>
         {navItems.map((item) => {
@@ -78,6 +88,7 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={`${styles.navLink} ${isActive ? styles.navLinkActive : ""}`}
+              onClick={onClose}
             >
               <Icon size={18} />
               <span>{item.label}</span>

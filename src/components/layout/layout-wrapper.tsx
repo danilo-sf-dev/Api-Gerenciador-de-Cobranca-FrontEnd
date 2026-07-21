@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation";
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   // If path is auth, don't show the layout shell
   const isAuthRoute =
@@ -59,9 +60,12 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
 
   return (
     <div className={styles.container}>
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      {sidebarOpen && (
+        <div className={styles.backdrop} onClick={() => setSidebarOpen(false)} />
+      )}
       <div className={styles.main}>
-        <Header />
+        <Header onMenuClick={() => setSidebarOpen(true)} />
         <main className={styles.content}>{children}</main>
       </div>
     </div>

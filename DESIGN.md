@@ -12,6 +12,7 @@ colors:
 rounded:
   sm: "4px"
   md: "8px"
+  pill: "9999px"
 spacing:
   xs: "4px"
   sm: "8px"
