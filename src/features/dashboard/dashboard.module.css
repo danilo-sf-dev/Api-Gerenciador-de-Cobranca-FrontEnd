@@ -1,0 +1,153 @@
+/* src/features/dashboard/dashboard.module.css */
+
+/* KPI Grid: 1 col on mobile, 2 cols on tablet, 4 cols on desktop */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+@media (min-width: 640px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .kpiGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Bottom Grid: 1 col on mobile/tablet, 1fr 300px on desktop */
+.bottomGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg);
+}
+
+@media (min-width: 1024px) {
+  .bottomGrid {
+    grid-template-columns: 1fr 300px;
+  }
+}
+
+/* Responsive Table Wrapper vs Mobile Cards Wrapper */
+.responsiveTableWrapper {
+  display: block;
+  width: 100%;
+}
+
+.mobileCardsWrapper {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .responsiveTableWrapper {
+    display: none;
+  }
+  .mobileCardsWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    width: 100%;
+  }
+}
+
+/* Mobile card list view styling */
+.mobileCard {
+  background-color: var(--colors-bg);
+  border: 1px solid var(--colors-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  text-decoration: none;
+  color: inherit;
+}
+
+.mobileCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-xs);
+}
+
+.mobileCardTitle {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--colors-ink);
+}
+
+.mobileCardSubtitle {
+  font-size: 0.75rem;
+  color: var(--colors-muted);
+  margin-top: 2px;
+}
+
+.mobileCardBadge {
+  flex-shrink: 0;
+}
+
+.mobileCardBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: var(--space-xs) 0;
+  padding: var(--space-sm) 0;
+  border-top: 1px dashed var(--colors-border);
+  border-bottom: 1px dashed var(--colors-border);
+}
+
+.mobileCardRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+}
+
+.mobileCardLabel {
+  color: var(--colors-muted);
+}
+
+.mobileCardValue {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--colors-ink);
+}
+
+.mobileCardValueAccent {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--status-late-text);
+}
+
+.mobileCardFooter {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: var(--space-xs);
+}
+
+/* Delinquency rate widget containing text wrapping to avoid overflow */
+.delinquencyWidget {
+  background-color: var(--colors-surface);
+  border: 1px solid var(--colors-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.delinquencyWidgetText {
+  font-size: 0.8125rem;
+  color: var(--colors-muted);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  max-width: 100%;
+}
