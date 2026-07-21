@@ -273,15 +273,52 @@
 
   /* Compact header on mobile */
   .header {
-    padding: 0 var(--space-md);
+    height: auto;
+    padding: var(--space-md);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    row-gap: var(--space-md);
+    column-gap: var(--space-sm);
+    align-items: center;
+  }
+
+  .headerLeft {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .headerRight {
+    display: contents; /* Dissolves wrapper to make themeToggle grid-alignable */
+  }
+
+  .themeToggle {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
   }
 
   .roleSelector {
-    padding: var(--space-xs);
+    grid-column: 1 / span 2;
+    grid-row: 2;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--colors-surface);
+    border: 1px solid var(--colors-border);
+    border-radius: var(--radius-sm);
   }
 
   .roleSelector span {
-    display: none; /* Hide labels on mobile to save space */
+    display: inline !important; /* Keep labels visible since it has a full line */
+  }
+
+  .roleSelect {
+    flex: 1;
+    text-align: right;
+    margin-left: var(--space-sm);
   }
 
   .userInfo {

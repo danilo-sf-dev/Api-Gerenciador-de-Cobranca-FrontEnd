@@ -6,7 +6,9 @@ docs/
 .cursor/
 .claude/
 .gemini/
+.gemini/skills/impeccable
 .agents/
+.impeccable/
 
 # SDD workflow (local por dev)
 sdd/

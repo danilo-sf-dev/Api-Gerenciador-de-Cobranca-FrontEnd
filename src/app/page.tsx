@@ -132,7 +132,6 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Metrics Cards Grid */}
       <div
         style={{
           display: "grid",
@@ -220,14 +219,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Main Grid: Shortcuts and Late list */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 320px",
-          gap: "var(--space-lg)",
-          alignItems: "start",
-        }}
-      >
+      <div className="dashboardBottomGrid">
         {/* Left Side: Recent Late Attention */}
         <div className={styles.card}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

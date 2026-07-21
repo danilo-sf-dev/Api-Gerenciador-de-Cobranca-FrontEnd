@@ -220,3 +220,46 @@ p {
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
+
+/* Page header: title + action button, wraps to two lines on mobile */
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.pageHeaderText {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-md);
+  }
+
+  .pageHeader > *:not(.pageHeaderText) {
+    width: 100%;
+    box-sizing: border-box;
+    display: inline-flex;
+    justify-content: center;
+  }
+}
+
+/* Dashboard bottom grid: two-column on desktop, stacks on mobile */
+.dashboardBottomGrid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+@media (max-width: 1023px) {
+  .dashboardBottomGrid {
+    grid-template-columns: 1fr;
+  }
+}

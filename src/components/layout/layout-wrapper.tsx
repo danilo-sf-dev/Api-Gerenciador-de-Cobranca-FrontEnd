@@ -61,9 +61,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div className={styles.container}>
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      {sidebarOpen && (
-        <div className={styles.backdrop} onClick={() => setSidebarOpen(false)} />
-      )}
+      {sidebarOpen && <div className={styles.backdrop} onClick={() => setSidebarOpen(false)} />}
       <div className={styles.main}>
         <Header onMenuClick={() => setSidebarOpen(true)} />
         <main className={styles.content}>{children}</main>

@@ -9,7 +9,7 @@ import { TableEmptyState } from "@/components/data-table/table-empty-state";
 import { TableLoading } from "@/components/data-table/table-loading";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
-import { Edit2, ToggleLeft, ToggleRight, Plus, Search } from "lucide-react";
+import { Edit2, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
@@ -62,36 +62,24 @@ export default function RolesListPage() {
     name: string,
     currentStatus: "ACTIVE" | "INACTIVE",
   ) => {
-    if (!hasPermission(PERMISSIONS.INACTIVATE_ROLE)) {
-      alert("Você não tem permissão para alterar o status de um cargo.");
-      return;
-    }
-
+    if (!hasPermission(PERMISSIONS.INACTIVATE_ROLE)) return;
     if (name === "Owner" || name === "Gerente" || name === "Vendedor" || name === "Funcionário") {
-      alert("Não é permitido desativar cargos fundamentais do sistema.");
       return;
     }
 
-    const confirmMessage =
-      currentStatus === "ACTIVE"
-        ? `Tem certeza de que deseja inativar o cargo "${name}"? Usuários não poderão ser associados a cargos inativos.`
-        : `Tem certeza de que deseja ativar o cargo "${name}"?`;
-
-    if (window.confirm(confirmMessage)) {
-      try {
-        const nextStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-        await RolesService.changeRoleStatus(id, nextStatus);
-        loadRoles();
-      } catch (err: any) {
-        alert(err.message || "Erro ao alterar status do cargo.");
-      }
+    try {
+      const nextStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+      await RolesService.changeRoleStatus(id, nextStatus);
+      loadRoles();
+    } catch (err: any) {
+      console.error(err.message || "Erro ao alterar status do cargo.");
     }
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-lg)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
+      <div className="pageHeader">
+        <div className="pageHeaderText">
           <h1 style={{ fontWeight: 700 }}>Cargos & Hierarquias</h1>
           <p style={{ color: "var(--colors-muted)", fontSize: "0.875rem", marginTop: 4 }}>
             Configuração dos cargos corporativos dinâmicos e níveis de permissão
@@ -135,140 +123,189 @@ export default function RolesListPage() {
         <table className={styles.table}>
           <thead>
             <tr>
-                <SortableHeader
-                  label="Nome do Cargo"
-                  field="name"
-                  currentSort={sort}
-                  onSort={setSort}
-                />
-                <SortableHeader
-                  label="Nível Hierárquico"
-                  field="hierarchyLevel"
-                  currentSort={sort}
-                  onSort={setSort}
-                />
-                <SortableHeader label="Status" field="status" currentSort={sort} onSort={setSort} />
-                <th className={styles.th} style={{ textAlign: "right" }}>
-                  Ações
-                </th>
+              <SortableHeader
+                label="Nome do Cargo"
+                field="name"
+                currentSort={sort}
+                onSort={setSort}
+              />
+              <SortableHeader
+                label="Nível Hierárquico"
+                field="hierarchyLevel"
+                currentSort={sort}
+                onSort={setSort}
+              />
+              <SortableHeader label="Status" field="status" currentSort={sort} onSort={setSort} />
+              <th className={styles.th} style={{ textAlign: "right" }}>
+                Ações
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={4} style={{ padding: 0 }}>
+                  <TableLoading rowsCount={5} />
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={4} style={{ padding: 0 }}>
-                    <TableLoading rowsCount={5} />
+            ) : roles.length === 0 ? (
+              <tr>
+                <td colSpan={4} style={{ padding: 0 }}>
+                  <TableEmptyState message="Nenhum cargo encontrado." />
+                </td>
+              </tr>
+            ) : (
+              roles.map((r) => (
+                <tr key={r.id} className={styles.tr}>
+                  <td className={styles.td} style={{ fontWeight: 600 }}>
+                    {r.name}
+                  </td>
+                  <td className={`${styles.td} tabular-nums`}>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 24,
+                        height: 24,
+                        borderRadius: "50%",
+                        backgroundColor:
+                          r.hierarchyLevel === 1
+                            ? "var(--colors-primary-light)"
+                            : "var(--colors-surface)",
+                        color:
+                          r.hierarchyLevel === 1 ? "var(--colors-primary)" : "var(--colors-ink)",
+                        fontWeight: 600,
+                        fontSize: "0.75rem",
+                      }}
+                    >
+                      {r.hierarchyLevel}
+                    </span>
+                    <span
+                      style={{
+                        marginLeft: 8,
+                        color: "var(--colors-muted)",
+                        fontSize: "0.8125rem",
+                      }}
+                    >
+                      {r.hierarchyLevel === 1 && "(Administrador Supremo)"}
+                      {r.hierarchyLevel === 2 && "(Gerência de Equipe)"}
+                      {r.hierarchyLevel === 3 && "(Nível Operacional)"}
+                      {r.hierarchyLevel >= 4 && "(Acesso Básico)"}
+                    </span>
+                  </td>
+                  <td className={styles.td}>
+                    <span
+                      className={`${styles.badge} ${r.status === "ACTIVE" ? styles.badgePaid : styles.badgeCanceled}`}
+                    >
+                      {r.status === "ACTIVE" ? "Ativo" : "Inativo"}
+                    </span>
+                  </td>
+                  <td className={styles.td} style={{ textAlign: "right" }}>
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                      {/* Only allow editing custom roles, or block fundamental name editing inside the edit page */}
+                      {hasPermission(PERMISSIONS.EDIT_ROLE) && (
+                        <Link
+                          href={`${ROUTES.ROLES}/${r.id}/editar`}
+                          className={styles.btn}
+                          style={{ padding: 6, backgroundColor: "transparent", border: "none" }}
+                          title="Editar Cargo"
+                        >
+                          <Edit2 size={16} style={{ color: "var(--colors-accent)" }} />
+                        </Link>
+                      )}
+                      {hasPermission(PERMISSIONS.INACTIVATE_ROLE) &&
+                        (() => {
+                          const isFundamental =
+                            r.name === "Owner" ||
+                            r.name === "Gerente" ||
+                            r.name === "Vendedor" ||
+                            r.name === "Funcionário";
+                          return (
+                            <button
+                              onClick={() => handleToggleStatus(r.id, r.name, r.status)}
+                              disabled={isFundamental}
+                              className={styles.btn}
+                              style={{
+                                padding: 6,
+                                backgroundColor: "transparent",
+                                border: "none",
+                                cursor: isFundamental ? "not-allowed" : "pointer",
+                                opacity: isFundamental ? 0.4 : 1,
+                              }}
+                              title={
+                                isFundamental
+                                  ? "Não é permitido alterar cargos padrão do sistema"
+                                  : r.status === "ACTIVE"
+                                    ? "Inativar cargo"
+                                    : "Ativar cargo"
+                              }
+                              aria-label={r.status === "ACTIVE" ? "Inativar" : "Ativar"}
+                            >
+                              {r.status === "ACTIVE" ? (
+                                <span
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    width: 28,
+                                    height: 16,
+                                    borderRadius: 9999,
+                                    backgroundColor: "var(--status-paid-text)",
+                                    position: "relative",
+                                    transition: "background-color 0.2s",
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      position: "absolute",
+                                      right: 2,
+                                      width: 12,
+                                      height: 12,
+                                      borderRadius: "50%",
+                                      backgroundColor: "#fff",
+                                      transition: "right 0.2s",
+                                    }}
+                                  />
+                                </span>
+                              ) : (
+                                <span
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    width: 28,
+                                    height: 16,
+                                    borderRadius: 9999,
+                                    backgroundColor: "var(--colors-border)",
+                                    position: "relative",
+                                    transition: "background-color 0.2s",
+                                    border: "1px solid var(--colors-muted)",
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      position: "absolute",
+                                      left: 2,
+                                      width: 12,
+                                      height: 12,
+                                      borderRadius: "50%",
+                                      backgroundColor: "var(--colors-muted)",
+                                      transition: "left 0.2s",
+                                    }}
+                                  />
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })()}
+                    </div>
                   </td>
                 </tr>
-              ) : roles.length === 0 ? (
-                <tr>
-                  <td colSpan={4} style={{ padding: 0 }}>
-                    <TableEmptyState message="Nenhum cargo encontrado." />
-                  </td>
-                </tr>
-              ) : (
-                roles.map((r) => (
-                  <tr key={r.id} className={styles.tr}>
-                    <td className={styles.td} style={{ fontWeight: 600 }}>
-                      {r.name}
-                    </td>
-                    <td className={`${styles.td} tabular-nums`}>
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          width: 24,
-                          height: 24,
-                          borderRadius: "50%",
-                          backgroundColor:
-                            r.hierarchyLevel === 1
-                              ? "var(--colors-primary-light)"
-                              : "var(--colors-surface)",
-                          color:
-                            r.hierarchyLevel === 1 ? "var(--colors-primary)" : "var(--colors-ink)",
-                          fontWeight: 600,
-                          fontSize: "0.75rem",
-                        }}
-                      >
-                        {r.hierarchyLevel}
-                      </span>
-                      <span
-                        style={{
-                          marginLeft: 8,
-                          color: "var(--colors-muted)",
-                          fontSize: "0.8125rem",
-                        }}
-                      >
-                        {r.hierarchyLevel === 1 && "(Administrador Supremo)"}
-                        {r.hierarchyLevel === 2 && "(Gerência de Equipe)"}
-                        {r.hierarchyLevel === 3 && "(Nível Operacional)"}
-                        {r.hierarchyLevel >= 4 && "(Acesso Básico)"}
-                      </span>
-                    </td>
-                    <td className={styles.td}>
-                      <span
-                        className={`${styles.badge} ${r.status === "ACTIVE" ? styles.badgePaid : styles.badgeCanceled}`}
-                      >
-                        {r.status === "ACTIVE" ? "Ativo" : "Inativo"}
-                      </span>
-                    </td>
-                    <td className={styles.td} style={{ textAlign: "right" }}>
-                      <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                        {/* Only allow editing custom roles, or block fundamental name editing inside the edit page */}
-                        {hasPermission(PERMISSIONS.EDIT_ROLE) && (
-                          <Link
-                            href={`${ROUTES.ROLES}/${r.id}/editar`}
-                            className={styles.btn}
-                            style={{ padding: 6, backgroundColor: "transparent", border: "none" }}
-                            title="Editar Cargo"
-                          >
-                            <Edit2 size={16} style={{ color: "var(--colors-accent)" }} />
-                          </Link>
-                        )}
-                        {hasPermission(PERMISSIONS.INACTIVATE_ROLE) && (
-                          <button
-                            onClick={() => handleToggleStatus(r.id, r.name, r.status)}
-                            disabled={
-                              r.name === "Owner" ||
-                              r.name === "Gerente" ||
-                              r.name === "Vendedor" ||
-                              r.name === "Funcionário"
-                            }
-                            className={styles.btn}
-                            style={{
-                              padding: 6,
-                              backgroundColor: "transparent",
-                              border: "none",
-                              cursor: "pointer",
-                            }}
-                            title={r.status === "ACTIVE" ? "Inativar" : "Ativar"}
-                          >
-                            {r.status === "ACTIVE" ? (
-                              <ToggleRight
-                                size={20}
-                                style={{
-                                  color:
-                                    r.name === "Owner" ||
-                                    r.name === "Gerente" ||
-                                    r.name === "Vendedor" ||
-                                    r.name === "Funcionário"
-                                      ? "var(--colors-border)"
-                                      : "var(--status-paid-text)",
-                                }}
-                              />
-                            ) : (
-                              <ToggleLeft size={20} style={{ color: "var(--colors-muted)" }} />
-                            )}
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+              ))
+            )}
+          </tbody>
+        </table>
 
         <Pagination
           page={page}

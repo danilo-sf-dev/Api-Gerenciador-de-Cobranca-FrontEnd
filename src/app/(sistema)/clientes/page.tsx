@@ -63,8 +63,8 @@ export default function CustomersListPage() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-lg)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
+      <div className="pageHeader">
+        <div className="pageHeaderText">
           <h1 style={{ fontWeight: 700 }}>Clientes</h1>
           <p style={{ color: "var(--colors-muted)", fontSize: "0.875rem", marginTop: 4 }}>
             Visualização e cadastro de carteira de clientes associados
@@ -108,88 +108,88 @@ export default function CustomersListPage() {
         <table className={styles.table}>
           <thead>
             <tr>
-                <SortableHeader
-                  label="Cliente / Razão Social"
-                  field="name"
-                  currentSort={sort}
-                  onSort={setSort}
-                />
-                <th className={styles.th}>CPF / CNPJ</th>
-                <th className={styles.th}>E-mail</th>
-                <th className={styles.th}>Telefone</th>
-                <SortableHeader
-                  label="Vendedor Associado"
-                  field="sellerName"
-                  currentSort={sort}
-                  onSort={setSort}
-                />
-                <SortableHeader
-                  label="Cadastrado em"
-                  field="createdAt"
-                  currentSort={sort}
-                  onSort={setSort}
-                />
-                <th className={styles.th} style={{ textAlign: "right" }}>
-                  Ações
-                </th>
+              <SortableHeader
+                label="Cliente / Razão Social"
+                field="name"
+                currentSort={sort}
+                onSort={setSort}
+              />
+              <th className={styles.th}>CPF / CNPJ</th>
+              <th className={styles.th}>E-mail</th>
+              <th className={styles.th}>Telefone</th>
+              <SortableHeader
+                label="Vendedor Associado"
+                field="sellerName"
+                currentSort={sort}
+                onSort={setSort}
+              />
+              <SortableHeader
+                label="Cadastrado em"
+                field="createdAt"
+                currentSort={sort}
+                onSort={setSort}
+              />
+              <th className={styles.th} style={{ textAlign: "right" }}>
+                Ações
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={7} style={{ padding: 0 }}>
+                  <TableLoading rowsCount={5} />
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={7} style={{ padding: 0 }}>
-                    <TableLoading rowsCount={5} />
+            ) : customers.length === 0 ? (
+              <tr>
+                <td colSpan={7} style={{ padding: 0 }}>
+                  <TableEmptyState message="Nenhum cliente encontrado." />
+                </td>
+              </tr>
+            ) : (
+              customers.map((c) => (
+                <tr key={c.id} className={styles.tr}>
+                  <td className={styles.td}>
+                    <div style={{ fontWeight: 600 }}>{c.name}</div>
                   </td>
-                </tr>
-              ) : customers.length === 0 ? (
-                <tr>
-                  <td colSpan={7} style={{ padding: 0 }}>
-                    <TableEmptyState message="Nenhum cliente encontrado." />
+                  <td className={`${styles.td} tabular-nums`} style={{ fontSize: "0.8125rem" }}>
+                    {c.documentType === "CPF" ? formatCPF(c.document) : formatCNPJ(c.document)}
                   </td>
-                </tr>
-              ) : (
-                customers.map((c) => (
-                  <tr key={c.id} className={styles.tr}>
-                    <td className={styles.td}>
-                      <div style={{ fontWeight: 600 }}>{c.name}</div>
-                    </td>
-                    <td className={`${styles.td} tabular-nums`} style={{ fontSize: "0.8125rem" }}>
-                      {c.documentType === "CPF" ? formatCPF(c.document) : formatCNPJ(c.document)}
-                    </td>
-                    <td className={styles.td}>{c.email || "-"}</td>
-                    <td className={`${styles.td} tabular-nums`}>
-                      {c.phone ? formatPhone(c.phone) : "-"}
-                    </td>
-                    <td className={styles.td}>
-                      <div style={{ fontWeight: 500 }}>{c.sellerName}</div>
-                      <div
-                        style={{
-                          fontSize: "0.75rem",
-                          color: "var(--colors-muted)",
-                          fontFamily: "var(--font-mono)",
-                        }}
+                  <td className={styles.td}>{c.email || "-"}</td>
+                  <td className={`${styles.td} tabular-nums`}>
+                    {c.phone ? formatPhone(c.phone) : "-"}
+                  </td>
+                  <td className={styles.td}>
+                    <div style={{ fontWeight: 500 }}>{c.sellerName}</div>
+                    <div
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--colors-muted)",
+                        fontFamily: "var(--font-mono)",
+                      }}
+                    >
+                      Código: {c.sellerCode}
+                    </div>
+                  </td>
+                  <td className={`${styles.td} tabular-nums`}>{formatDate(c.createdAt)}</td>
+                  <td className={styles.td} style={{ textAlign: "right" }}>
+                    {hasPermission(PERMISSIONS.EDIT_CUSTOMER) && (
+                      <Link
+                        href={`${ROUTES.CUSTOMERS}/${c.id}/editar`}
+                        className={styles.btn}
+                        style={{ padding: 6, backgroundColor: "transparent", border: "none" }}
+                        title="Editar Cliente"
                       >
-                        Código: {c.sellerCode}
-                      </div>
-                    </td>
-                    <td className={`${styles.td} tabular-nums`}>{formatDate(c.createdAt)}</td>
-                    <td className={styles.td} style={{ textAlign: "right" }}>
-                      {hasPermission(PERMISSIONS.EDIT_CUSTOMER) && (
-                        <Link
-                          href={`${ROUTES.CUSTOMERS}/${c.id}/editar`}
-                          className={styles.btn}
-                          style={{ padding: 6, backgroundColor: "transparent", border: "none" }}
-                          title="Editar Cliente"
-                        >
-                          <Edit2 size={16} style={{ color: "var(--colors-accent)" }} />
-                        </Link>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                        <Edit2 size={16} style={{ color: "var(--colors-accent)" }} />
+                      </Link>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
 
         <Pagination
           page={page}

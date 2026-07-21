@@ -3,7 +3,16 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Users, Briefcase, Shield, UserCog, LogOut, X } from "lucide-react";
+import {
+  LayoutDashboard,
+  FileText,
+  Users,
+  Briefcase,
+  Shield,
+  UserCog,
+  LogOut,
+  X,
+} from "lucide-react";
 import { ROUTES } from "@/lib/constants/routes";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { useAuth } from "@/features/auth/context/auth-context";

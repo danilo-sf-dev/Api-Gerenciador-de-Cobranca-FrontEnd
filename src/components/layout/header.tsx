@@ -48,7 +48,15 @@ export function Header({ onMenuClick }: HeaderProps) {
         <button onClick={onMenuClick} className={styles.menuButton} aria-label="Abrir menu">
           <Menu size={20} />
         </button>
-        <h3 style={{ fontWeight: 500, fontSize: "0.9375rem", color: "var(--colors-muted)", display: "flex", alignItems: "center" }}>
+        <h3
+          style={{
+            fontWeight: 500,
+            fontSize: "0.9375rem",
+            color: "var(--colors-muted)",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           {user.role.name === "Owner" ? "Painel Administrativo" : "Área do Colaborador"}
         </h3>
       </div>
@@ -69,7 +77,14 @@ export function Header({ onMenuClick }: HeaderProps) {
           title="Selecione um cargo para testar os privilégios do layout em tempo real."
         >
           <ShieldAlert size={14} style={{ color: "var(--colors-primary)" }} />
-          <span style={{ fontSize: "0.75rem", fontWeight: 500, color: "var(--colors-muted)", whiteSpace: "nowrap" }}>
+          <span
+            style={{
+              fontSize: "0.75rem",
+              fontWeight: 500,
+              color: "var(--colors-muted)",
+              whiteSpace: "nowrap",
+            }}
+          >
             Testar Cargo:
           </span>
           <select value={user.role.id} onChange={handleRoleChange} className={styles.roleSelect}>

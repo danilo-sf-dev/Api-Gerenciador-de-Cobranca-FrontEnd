@@ -11,7 +11,7 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { formatCPF } from "@/lib/formatters/cpf";
 import { formatPhone } from "@/lib/formatters/phone";
-import { Edit2, ToggleLeft, ToggleRight, Plus, Search } from "lucide-react";
+import { Edit2, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
@@ -63,31 +63,20 @@ export default function SellersListPage() {
   }, [page, sort, searchQuery]);
 
   const handleToggleStatus = async (id: string, currentStatus: "ACTIVE" | "INACTIVE") => {
-    if (!hasPermission(PERMISSIONS.INACTIVATE_SELLER)) {
-      alert("Você não tem permissão para alterar o status de um vendedor.");
-      return;
-    }
-
-    const confirmMessage =
-      currentStatus === "ACTIVE"
-        ? "Tem certeza de que deseja inativar este vendedor? Ele não poderá ser associado a novos clientes ou títulos."
-        : "Tem certeza de que deseja ativar este vendedor?";
-
-    if (window.confirm(confirmMessage)) {
-      try {
-        const nextStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-        await SellersService.changeSellerStatus(id, nextStatus);
-        loadSellers();
-      } catch (err: any) {
-        alert(err.message || "Erro ao alterar status do vendedor.");
-      }
+    if (!hasPermission(PERMISSIONS.INACTIVATE_SELLER)) return;
+    try {
+      const nextStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+      await SellersService.changeSellerStatus(id, nextStatus);
+      loadSellers();
+    } catch (err: any) {
+      console.error(err.message || "Erro ao alterar status do vendedor.");
     }
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-lg)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
+      <div className="pageHeader">
+        <div className="pageHeaderText">
           <h1 style={{ fontWeight: 700 }}>Vendedores</h1>
           <p style={{ color: "var(--colors-muted)", fontSize: "0.875rem", marginTop: 4 }}>
             Gerenciamento de vendedores associados a clientes e cobranças
@@ -130,88 +119,138 @@ export default function SellersListPage() {
       <div className={styles.tableWrapper}>
         <table className={styles.table}>
           <thead>
+            <tr>
+              <SortableHeader label="Código" field="code" currentSort={sort} onSort={setSort} />
+              <SortableHeader label="Nome" field="name" currentSort={sort} onSort={setSort} />
+              <th className={styles.th}>CPF</th>
+              <th className={styles.th}>E-mail</th>
+              <th className={styles.th}>Celular</th>
+              <SortableHeader label="Status" field="status" currentSort={sort} onSort={setSort} />
+              <th className={styles.th} style={{ textAlign: "right" }}>
+                Ações
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
               <tr>
-                <SortableHeader label="Código" field="code" currentSort={sort} onSort={setSort} />
-                <SortableHeader label="Nome" field="name" currentSort={sort} onSort={setSort} />
-                <th className={styles.th}>CPF</th>
-                <th className={styles.th}>E-mail</th>
-                <th className={styles.th}>Celular</th>
-                <SortableHeader label="Status" field="status" currentSort={sort} onSort={setSort} />
-                <th className={styles.th} style={{ textAlign: "right" }}>
-                  Ações
-                </th>
+                <td colSpan={7} style={{ padding: 0 }}>
+                  <TableLoading rowsCount={5} />
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={7} style={{ padding: 0 }}>
-                    <TableLoading rowsCount={5} />
+            ) : sellers.length === 0 ? (
+              <tr>
+                <td colSpan={7} style={{ padding: 0 }}>
+                  <TableEmptyState message="Nenhum vendedor encontrado." />
+                </td>
+              </tr>
+            ) : (
+              sellers.map((s) => (
+                <tr key={s.id} className={styles.tr}>
+                  <td className={`${styles.td} tabular-nums`} style={{ fontWeight: 600 }}>
+                    {s.code}
+                  </td>
+                  <td className={styles.td} style={{ fontWeight: 500 }}>
+                    {s.name}
+                  </td>
+                  <td className={`${styles.td} tabular-nums`}>{formatCPF(s.cpf)}</td>
+                  <td className={styles.td}>{s.email || "-"}</td>
+                  <td className={`${styles.td} tabular-nums`}>{formatPhone(s.phone)}</td>
+                  <td className={styles.td}>
+                    <span
+                      className={`${styles.badge} ${s.status === "ACTIVE" ? styles.badgePaid : styles.badgeCanceled}`}
+                    >
+                      {s.status === "ACTIVE" ? "Ativo" : "Inativo"}
+                    </span>
+                  </td>
+                  <td className={styles.td} style={{ textAlign: "right" }}>
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                      {hasPermission(PERMISSIONS.EDIT_SELLER) && (
+                        <Link
+                          href={`${ROUTES.SELLERS}/${s.id}/editar`}
+                          className={styles.btn}
+                          style={{ padding: 6, backgroundColor: "transparent", border: "none" }}
+                          title="Editar"
+                        >
+                          <Edit2 size={16} style={{ color: "var(--colors-accent)" }} />
+                        </Link>
+                      )}
+                      {hasPermission(PERMISSIONS.INACTIVATE_SELLER) && (
+                        <button
+                          onClick={() => handleToggleStatus(s.id, s.status)}
+                          className={styles.btn}
+                          style={{
+                            padding: 6,
+                            backgroundColor: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                          }}
+                          title={s.status === "ACTIVE" ? "Inativar vendedor" : "Ativar vendedor"}
+                          aria-label={s.status === "ACTIVE" ? "Inativar" : "Ativar"}
+                        >
+                          {s.status === "ACTIVE" ? (
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: 28,
+                                height: 16,
+                                borderRadius: 9999,
+                                backgroundColor: "var(--status-paid-text)",
+                                position: "relative",
+                                transition: "background-color 0.2s",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  position: "absolute",
+                                  right: 2,
+                                  width: 12,
+                                  height: 12,
+                                  borderRadius: "50%",
+                                  backgroundColor: "#fff",
+                                  transition: "right 0.2s",
+                                }}
+                              />
+                            </span>
+                          ) : (
+                            <span
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: 28,
+                                height: 16,
+                                borderRadius: 9999,
+                                backgroundColor: "var(--colors-border)",
+                                position: "relative",
+                                transition: "background-color 0.2s",
+                                border: "1px solid var(--colors-muted)",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  position: "absolute",
+                                  left: 2,
+                                  width: 12,
+                                  height: 12,
+                                  borderRadius: "50%",
+                                  backgroundColor: "var(--colors-muted)",
+                                  transition: "left 0.2s",
+                                }}
+                              />
+                            </span>
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
-              ) : sellers.length === 0 ? (
-                <tr>
-                  <td colSpan={7} style={{ padding: 0 }}>
-                    <TableEmptyState message="Nenhum vendedor encontrado." />
-                  </td>
-                </tr>
-              ) : (
-                sellers.map((s) => (
-                  <tr key={s.id} className={styles.tr}>
-                    <td className={`${styles.td} tabular-nums`} style={{ fontWeight: 600 }}>
-                      {s.code}
-                    </td>
-                    <td className={styles.td} style={{ fontWeight: 500 }}>
-                      {s.name}
-                    </td>
-                    <td className={`${styles.td} tabular-nums`}>{formatCPF(s.cpf)}</td>
-                    <td className={styles.td}>{s.email || "-"}</td>
-                    <td className={`${styles.td} tabular-nums`}>{formatPhone(s.phone)}</td>
-                    <td className={styles.td}>
-                      <span
-                        className={`${styles.badge} ${s.status === "ACTIVE" ? styles.badgePaid : styles.badgeCanceled}`}
-                      >
-                        {s.status === "ACTIVE" ? "Ativo" : "Inativo"}
-                      </span>
-                    </td>
-                    <td className={styles.td} style={{ textAlign: "right" }}>
-                      <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                        {hasPermission(PERMISSIONS.EDIT_SELLER) && (
-                          <Link
-                            href={`${ROUTES.SELLERS}/${s.id}/editar`}
-                            className={styles.btn}
-                            style={{ padding: 6, backgroundColor: "transparent", border: "none" }}
-                            title="Editar"
-                          >
-                            <Edit2 size={16} style={{ color: "var(--colors-accent)" }} />
-                          </Link>
-                        )}
-                        {hasPermission(PERMISSIONS.INACTIVATE_SELLER) && (
-                          <button
-                            onClick={() => handleToggleStatus(s.id, s.status)}
-                            className={styles.btn}
-                            style={{
-                              padding: 6,
-                              backgroundColor: "transparent",
-                              border: "none",
-                              cursor: "pointer",
-                            }}
-                            title={s.status === "ACTIVE" ? "Inativar" : "Ativar"}
-                          >
-                            {s.status === "ACTIVE" ? (
-                              <ToggleRight size={20} style={{ color: "var(--status-paid-text)" }} />
-                            ) : (
-                              <ToggleLeft size={20} style={{ color: "var(--colors-muted)" }} />
-                            )}
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+              ))
+            )}
+          </tbody>
+        </table>
 
         <Pagination
           page={page}

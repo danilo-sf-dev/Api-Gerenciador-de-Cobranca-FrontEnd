@@ -178,17 +178,21 @@ test.describe("Trustee Ledger Billing System E2E Flow", () => {
     await expect(firstRow).toContainText("R$ 2.500,00");
 
     // 5. Navigate to Detail Page and Register manual payment
-    await page.click("text=Detalhes");
+    await page.click('a[title="Ver Detalhes do Título"]');
 
     // Check elements
     await expect(page.locator("text=Histórico de Alterações (Log de Auditoria)")).toBeVisible();
 
     // Trigger manual payment registration
     await page.click('button:has-text("Registrar Pagamento")');
-    await page.waitForSelector("text=Registrar Baixa de Pagamento");
-    await page.click('button:has-text("Confirmar Baixa")');
+    await page.waitForSelector("text=Registrar Pagamento");
+    await page.click('button:has-text("Confirmar Pagamento")');
 
     // Verify status updated to PAID
-    await expect(page.locator("tbody tr").first()).toContainText("PAGO");
+    await page.click("text=Voltar para Títulos");
+    await page.waitForURL("/titulos");
+    await page.fill('input[placeholder*="Nome do cliente"]', customerName);
+    await page.waitForTimeout(400);
+    await expect(page.locator("tbody tr").first()).toContainText("Pago");
   });
 });

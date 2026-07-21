@@ -246,8 +246,8 @@ export default function UsersListPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-lg)" }}>
       {/* Page Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
+      <div className="pageHeader">
+        <div className="pageHeaderText">
           <h1 style={{ fontWeight: 700 }}>Gestão de Usuários</h1>
           <p style={{ color: "var(--colors-muted)", fontSize: "0.875rem", marginTop: 4 }}>
             Total de usuários registrados no tenant:{" "}
@@ -298,114 +298,114 @@ export default function UsersListPage() {
         <table className={styles.table}>
           <thead>
             <tr>
-                <SortableHeader label="Usuário" field="name" currentSort={sort} onSort={setSort} />
-                <th className={styles.th}>Cargo / Perfil</th>
-                <SortableHeader label="Status" field="status" currentSort={sort} onSort={setSort} />
-                <th className={styles.th}>Último Login</th>
-                <th className={styles.th} style={{ textAlign: "right" }}>
-                  Ações
-                </th>
+              <SortableHeader label="Usuário" field="name" currentSort={sort} onSort={setSort} />
+              <th className={styles.th}>Cargo / Perfil</th>
+              <SortableHeader label="Status" field="status" currentSort={sort} onSort={setSort} />
+              <th className={styles.th}>Último Login</th>
+              <th className={styles.th} style={{ textAlign: "right" }}>
+                Ações
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {loadingUsers ? (
+              <tr>
+                <td colSpan={5} style={{ padding: 0 }}>
+                  <TableLoading rowsCount={5} />
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {loadingUsers ? (
-                <tr>
-                  <td colSpan={5} style={{ padding: 0 }}>
-                    <TableLoading rowsCount={5} />
-                  </td>
-                </tr>
-              ) : users.length === 0 ? (
-                <tr>
-                  <td colSpan={5} style={{ padding: 0 }}>
-                    <TableEmptyState message="Nenhum usuário encontrado." />
-                  </td>
-                </tr>
-              ) : (
-                users.map((u) => {
-                  const isPending = u.status === "PENDING_INVITATION";
-                  const isActive = u.status === "ACTIVE";
+            ) : users.length === 0 ? (
+              <tr>
+                <td colSpan={5} style={{ padding: 0 }}>
+                  <TableEmptyState message="Nenhum usuário encontrado." />
+                </td>
+              </tr>
+            ) : (
+              users.map((u) => {
+                const isPending = u.status === "PENDING_INVITATION";
+                const isActive = u.status === "ACTIVE";
 
-                  let statusBadgeClass = styles.badgeCanceled;
-                  let statusText = "Inativo";
-                  if (isPending) {
-                    statusBadgeClass = styles.badgeOverdue;
-                    statusText = "Convite Pendente";
-                  } else if (isActive) {
-                    statusBadgeClass = styles.badgePaid;
-                    statusText = "Ativo";
-                  }
+                let statusBadgeClass = styles.badgeCanceled;
+                let statusText = "Inativo";
+                if (isPending) {
+                  statusBadgeClass = styles.badgeOverdue;
+                  statusText = "Convite Pendente";
+                } else if (isActive) {
+                  statusBadgeClass = styles.badgePaid;
+                  statusText = "Ativo";
+                }
 
-                  return (
-                    <tr key={u.id} className={styles.tr}>
-                      <td className={styles.td}>
-                        <div style={{ fontWeight: 600 }}>{u.name}</div>
-                        <div style={{ fontSize: "0.75rem", color: "var(--colors-muted)" }}>
-                          {u.email}
-                        </div>
-                      </td>
-                      <td className={styles.td}>
-                        <span
-                          className={`${styles.badge} ${styles.badgeUpcoming}`}
-                          style={{ borderRadius: 4 }}
-                        >
-                          {u.role.name}
-                        </span>
-                        <span
-                          style={{
-                            marginLeft: 8,
-                            fontSize: "0.75rem",
-                            color: "var(--colors-muted)",
-                          }}
-                        >
-                          Nível {u.role.hierarchyLevel}
-                        </span>
-                      </td>
-                      <td className={styles.td}>
-                        <span className={`${styles.badge} ${statusBadgeClass}`}>{statusText}</span>
-                      </td>
-                      <td className={`${styles.td} tabular-nums`}>
-                        {u.lastLoginAt ? formatDateTime(u.lastLoginAt) : "Sem registros"}
-                      </td>
-                      <td className={styles.td} style={{ textAlign: "right" }}>
-                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 6 }}>
-                          {isPending && hasPermission(PERMISSIONS.RESEND_INVITATION) && (
-                            <button
-                              onClick={() => handleResendInvite(u.id)}
-                              className={`${styles.btn} ${styles.btnSecondary}`}
-                              style={{ padding: "4px 8px", fontSize: "0.75rem" }}
-                              title="Reenviar link de ativação"
-                            >
-                              <RefreshCw size={12} /> Reenviar
-                            </button>
-                          )}
-                          {isPending && hasPermission(PERMISSIONS.CANCEL_INVITATION) && (
-                            <button
-                              onClick={() => handleCancelInvite(u.id)}
-                              className={`${styles.btn} ${styles.btnDanger}`}
-                              style={{ padding: "4px 8px", fontSize: "0.75rem" }}
-                              title="Cancelar convite"
-                            >
-                              <XCircle size={12} /> Cancelar
-                            </button>
-                          )}
-                          {!isPending && hasPermission(PERMISSIONS.CHANGE_USER_ROLE) && (
-                            <button
-                              onClick={() => openChangeRoleModal(u)}
-                              className={`${styles.btn} ${styles.btnSecondary}`}
-                              style={{ padding: "6px 12px", fontSize: "0.75rem" }}
-                              title="Alterar Cargo"
-                            >
-                              <UserCog size={14} /> Cargo
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                return (
+                  <tr key={u.id} className={styles.tr}>
+                    <td className={styles.td}>
+                      <div style={{ fontWeight: 600 }}>{u.name}</div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--colors-muted)" }}>
+                        {u.email}
+                      </div>
+                    </td>
+                    <td className={styles.td}>
+                      <span
+                        className={`${styles.badge} ${styles.badgeUpcoming}`}
+                        style={{ borderRadius: 4 }}
+                      >
+                        {u.role.name}
+                      </span>
+                      <span
+                        style={{
+                          marginLeft: 8,
+                          fontSize: "0.75rem",
+                          color: "var(--colors-muted)",
+                        }}
+                      >
+                        Nível {u.role.hierarchyLevel}
+                      </span>
+                    </td>
+                    <td className={styles.td}>
+                      <span className={`${styles.badge} ${statusBadgeClass}`}>{statusText}</span>
+                    </td>
+                    <td className={`${styles.td} tabular-nums`}>
+                      {u.lastLoginAt ? formatDateTime(u.lastLoginAt) : "Sem registros"}
+                    </td>
+                    <td className={styles.td} style={{ textAlign: "right" }}>
+                      <div style={{ display: "flex", justifyContent: "flex-end", gap: 6 }}>
+                        {isPending && hasPermission(PERMISSIONS.RESEND_INVITATION) && (
+                          <button
+                            onClick={() => handleResendInvite(u.id)}
+                            className={`${styles.btn} ${styles.btnSecondary}`}
+                            style={{ padding: "4px 8px", fontSize: "0.75rem" }}
+                            title="Reenviar link de ativação"
+                          >
+                            <RefreshCw size={12} /> Reenviar
+                          </button>
+                        )}
+                        {isPending && hasPermission(PERMISSIONS.CANCEL_INVITATION) && (
+                          <button
+                            onClick={() => handleCancelInvite(u.id)}
+                            className={`${styles.btn} ${styles.btnDanger}`}
+                            style={{ padding: "4px 8px", fontSize: "0.75rem" }}
+                            title="Cancelar convite"
+                          >
+                            <XCircle size={12} /> Cancelar
+                          </button>
+                        )}
+                        {!isPending && hasPermission(PERMISSIONS.CHANGE_USER_ROLE) && (
+                          <button
+                            onClick={() => openChangeRoleModal(u)}
+                            className={`${styles.btn} ${styles.btnSecondary}`}
+                            style={{ padding: "6px 12px", fontSize: "0.75rem" }}
+                            title="Alterar Cargo"
+                          >
+                            <UserCog size={14} /> Cargo
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
 
         <Pagination
           page={userPage}
@@ -426,80 +426,78 @@ export default function UsersListPage() {
           <table className={styles.table}>
             <thead>
               <tr>
-                  <th className={styles.th}>Data da Alteração</th>
-                  <th className={styles.th}>Usuário</th>
-                  <th className={styles.th}>Transição</th>
-                  <th className={styles.th}>Tipo</th>
-                  <th className={styles.th}>Motivo / Justificativa</th>
+                <th className={styles.th}>Data da Alteração</th>
+                <th className={styles.th}>Usuário</th>
+                <th className={styles.th}>Transição</th>
+                <th className={styles.th}>Tipo</th>
+                <th className={styles.th}>Motivo / Justificativa</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loadingHistory ? (
+                <tr>
+                  <td colSpan={5} style={{ padding: "16px", textAlign: "center" }}>
+                    Carregando log de auditoria...
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {loadingHistory ? (
-                  <tr>
-                    <td colSpan={5} style={{ padding: "16px", textAlign: "center" }}>
-                      Carregando log de auditoria...
+              ) : history.length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={{ padding: 0 }}>
+                    <TableEmptyState message="Nenhum log de alteração registrado." />
+                  </td>
+                </tr>
+              ) : (
+                history.map((h) => (
+                  <tr key={h.id} style={{ borderBottom: "1px solid var(--colors-border)" }}>
+                    <td
+                      className={`${styles.td} tabular-nums`}
+                      style={{ fontSize: "0.8125rem", color: "var(--colors-muted)" }}
+                    >
+                      {formatDateTime(h.createdAt)}
                     </td>
-                  </tr>
-                ) : history.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} style={{ padding: 0 }}>
-                      <TableEmptyState message="Nenhum log de alteração registrado." />
+                    <td className={styles.td}>
+                      <div style={{ fontWeight: 600 }}>{h.userName}</div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--colors-muted)" }}>
+                        {h.userEmail}
+                      </div>
                     </td>
-                  </tr>
-                ) : (
-                  history.map((h) => (
-                    <tr key={h.id} style={{ borderBottom: "1px solid var(--colors-border)" }}>
-                      <td
-                        className={`${styles.td} tabular-nums`}
-                        style={{ fontSize: "0.8125rem", color: "var(--colors-muted)" }}
+                    <td className={styles.td}>
+                      <span style={{ fontWeight: 500 }}>{h.fromRoleName}</span>
+                      <span style={{ margin: "0 6px", color: "var(--colors-muted)" }}>&rarr;</span>
+                      <span style={{ fontWeight: 600, color: "var(--colors-primary)" }}>
+                        {h.toRoleName}
+                      </span>
+                    </td>
+                    <td className={styles.td}>
+                      <span
+                        className={`${styles.badge} ${h.type === "TEMPORARY" ? styles.badgeOverdue : styles.badgePaid}`}
+                        style={{ borderRadius: 4 }}
                       >
-                        {formatDateTime(h.createdAt)}
-                      </td>
-                      <td className={styles.td}>
-                        <div style={{ fontWeight: 600 }}>{h.userName}</div>
-                        <div style={{ fontSize: "0.75rem", color: "var(--colors-muted)" }}>
-                          {h.userEmail}
-                        </div>
-                      </td>
-                      <td className={styles.td}>
-                        <span style={{ fontWeight: 500 }}>{h.fromRoleName}</span>
-                        <span style={{ margin: "0 6px", color: "var(--colors-muted)" }}>
-                          &rarr;
-                        </span>
-                        <span style={{ fontWeight: 600, color: "var(--colors-primary)" }}>
-                          {h.toRoleName}
-                        </span>
-                      </td>
-                      <td className={styles.td}>
-                        <span
-                          className={`${styles.badge} ${h.type === "TEMPORARY" ? styles.badgeOverdue : styles.badgePaid}`}
-                          style={{ borderRadius: 4 }}
+                        {h.type === "TEMPORARY" ? "Temporário" : "Permanente"}
+                      </span>
+                      {h.type === "TEMPORARY" && h.startDate && h.endDate && (
+                        <div
+                          style={{
+                            fontSize: "0.70rem",
+                            color: "var(--colors-muted)",
+                            marginTop: 4,
+                          }}
                         >
-                          {h.type === "TEMPORARY" ? "Temporário" : "Permanente"}
-                        </span>
-                        {h.type === "TEMPORARY" && h.startDate && h.endDate && (
-                          <div
-                            style={{
-                              fontSize: "0.70rem",
-                              color: "var(--colors-muted)",
-                              marginTop: 4,
-                            }}
-                          >
-                            Período: {formatDate(h.startDate)} até {formatDate(h.endDate)}
-                          </div>
-                        )}
-                      </td>
-                      <td
-                        className={styles.td}
-                        style={{ fontSize: "0.8125rem", maxWidth: 300, wordWrap: "break-word" }}
-                      >
-                        {h.reason}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                          Período: {formatDate(h.startDate)} até {formatDate(h.endDate)}
+                        </div>
+                      )}
+                    </td>
+                    <td
+                      className={styles.td}
+                      style={{ fontSize: "0.8125rem", maxWidth: 300, wordWrap: "break-word" }}
+                    >
+                      {h.reason}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
 
           <Pagination
             page={historyPage}

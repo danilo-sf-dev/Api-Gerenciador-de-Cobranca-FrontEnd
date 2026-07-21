@@ -112,8 +112,8 @@ export default function TitlesListPage() {
     <div
       style={{ display: "flex", flexDirection: "column", gap: "var(--space-lg)", width: "100%" }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div>
+      <div className="pageHeader">
+        <div className="pageHeaderText">
           <h1 style={{ fontWeight: 700 }}>Títulos e Cobranças</h1>
           <p style={{ color: "var(--colors-muted)", fontSize: "0.875rem", marginTop: 4 }}>
             Acompanhe a carteira de recebíveis, status de vencimento, pagamentos e renegociações
@@ -251,128 +251,125 @@ export default function TitlesListPage() {
         <table className={styles.table}>
           <thead>
             <tr>
-                <SortableHeader label="Código" field="id" currentSort={sort} onSort={setSort} />
-                <SortableHeader
-                  label="Cliente / Documento"
-                  field="customerName"
-                  currentSort={sort}
-                  onSort={setSort}
-                />
-                <SortableHeader
-                  label="Data Emissão"
-                  field="issueDate"
-                  currentSort={sort}
-                  onSort={setSort}
-                />
-                <SortableHeader
-                  label="Vencimento"
-                  field="dueDate"
-                  currentSort={sort}
-                  onSort={setSort}
-                />
-                <SortableHeader
-                  label="Valor Original"
-                  field="originalAmount"
-                  currentSort={sort}
-                  onSort={setSort}
-                  alignRight
-                />
-                <SortableHeader
-                  label="Valor Atualizado"
-                  field="updatedAmount"
-                  currentSort={sort}
-                  onSort={setSort}
-                  alignRight
-                />
-                <SortableHeader label="Status" field="status" currentSort={sort} onSort={setSort} />
-                <th className={styles.th} style={{ textAlign: "right" }}>
-                  Ações
-                </th>
+              <SortableHeader label="Código" field="id" currentSort={sort} onSort={setSort} />
+              <SortableHeader
+                label="Cliente / Documento"
+                field="customerName"
+                currentSort={sort}
+                onSort={setSort}
+              />
+              <SortableHeader
+                label="Data Emissão"
+                field="issueDate"
+                currentSort={sort}
+                onSort={setSort}
+              />
+              <SortableHeader
+                label="Vencimento"
+                field="dueDate"
+                currentSort={sort}
+                onSort={setSort}
+              />
+              <SortableHeader
+                label="Valor Original"
+                field="originalAmount"
+                currentSort={sort}
+                onSort={setSort}
+                alignRight
+              />
+              <SortableHeader
+                label="Valor Atualizado"
+                field="updatedAmount"
+                currentSort={sort}
+                onSort={setSort}
+                alignRight
+              />
+              <SortableHeader label="Status" field="status" currentSort={sort} onSort={setSort} />
+              <th className={styles.th} style={{ textAlign: "right" }}>
+                Ações
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={8} style={{ padding: 0 }}>
+                  <TableLoading rowsCount={8} />
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={8} style={{ padding: 0 }}>
-                    <TableLoading rowsCount={8} />
-                  </td>
-                </tr>
-              ) : titles.length === 0 ? (
-                <tr>
-                  <td colSpan={8} style={{ padding: 0 }}>
-                    <TableEmptyState message="Nenhum título encontrado com os filtros selecionados." />
-                  </td>
-                </tr>
-              ) : (
-                titles.map((t) => {
-                  const statusInfo = STATUS_DETAILS[t.status] || {
-                    label: t.status,
-                    badgeClass: "",
-                  };
-                  const docFormatted =
-                    t.customerDocument.replace(/\D/g, "").length === 14
-                      ? formatCNPJ(t.customerDocument)
-                      : formatCPF(t.customerDocument);
+            ) : titles.length === 0 ? (
+              <tr>
+                <td colSpan={8} style={{ padding: 0 }}>
+                  <TableEmptyState message="Nenhum título encontrado com os filtros selecionados." />
+                </td>
+              </tr>
+            ) : (
+              titles.map((t) => {
+                const statusInfo = STATUS_DETAILS[t.status] || {
+                  label: t.status,
+                  badgeClass: "",
+                };
+                const docFormatted =
+                  t.customerDocument.replace(/\D/g, "").length === 14
+                    ? formatCNPJ(t.customerDocument)
+                    : formatCPF(t.customerDocument);
 
-                  return (
-                    <tr key={t.id} className={styles.tr}>
-                      <td className={`${styles.td} ${pageStyles.codeCell}`}>{t.id}</td>
-                      <td className={styles.td}>
-                        <div style={{ fontWeight: 600 }}>{t.customerName}</div>
-                        <div
-                          style={{ fontSize: "0.75rem", color: "var(--colors-muted)" }}
-                          className="tabular-nums"
-                        >
-                          {docFormatted}
-                        </div>
-                      </td>
-                      <td className={`${styles.td} tabular-nums`}>{formatDate(t.issueDate)}</td>
-                      <td
-                        className={`${styles.td} tabular-nums`}
-                        style={{
-                          fontWeight: t.status === "LATE" || t.status === "OVERDUE" ? 600 : 400,
-                        }}
+                return (
+                  <tr key={t.id} className={styles.tr}>
+                    <td className={`${styles.td} ${pageStyles.codeCell}`}>{t.id}</td>
+                    <td className={styles.td}>
+                      <div style={{ fontWeight: 600 }}>{t.customerName}</div>
+                      <div
+                        style={{ fontSize: "0.75rem", color: "var(--colors-muted)" }}
+                        className="tabular-nums"
                       >
-                        {formatDate(t.dueDate)}
-                      </td>
-                      <td className={`${styles.td} tabular-nums text-right`}>
-                        {formatCurrency(t.originalAmount)}
-                      </td>
-                      <td
-                        className={`${styles.td} tabular-nums text-right`}
-                        style={{
-                          fontWeight: t.updatedAmount > t.originalAmount ? 600 : 400,
-                          color:
-                            t.updatedAmount > t.originalAmount
-                              ? "var(--status-late-text)"
-                              : "inherit",
-                        }}
+                        {docFormatted}
+                      </div>
+                    </td>
+                    <td className={`${styles.td} tabular-nums`}>{formatDate(t.issueDate)}</td>
+                    <td
+                      className={`${styles.td} tabular-nums`}
+                      style={{
+                        fontWeight: t.status === "LATE" || t.status === "OVERDUE" ? 600 : 400,
+                      }}
+                    >
+                      {formatDate(t.dueDate)}
+                    </td>
+                    <td className={`${styles.td} tabular-nums text-right`}>
+                      {formatCurrency(t.originalAmount)}
+                    </td>
+                    <td
+                      className={`${styles.td} tabular-nums text-right`}
+                      style={{
+                        fontWeight: t.updatedAmount > t.originalAmount ? 600 : 400,
+                        color:
+                          t.updatedAmount > t.originalAmount
+                            ? "var(--status-late-text)"
+                            : "inherit",
+                      }}
+                    >
+                      {formatCurrency(t.updatedAmount)}
+                    </td>
+                    <td className={styles.td}>
+                      <span className={`${styles.badge} ${statusInfo.badgeClass}`}>
+                        {statusInfo.label}
+                      </span>
+                    </td>
+                    <td className={styles.td} style={{ textAlign: "right" }}>
+                      <Link
+                        href={`${ROUTES.TITLES}/${t.id}`}
+                        className={pageStyles.actionBtn}
+                        title="Ver Detalhes do Título"
                       >
-                        {formatCurrency(t.updatedAmount)}
-                      </td>
-                      <td className={styles.td}>
-                        <span className={`${styles.badge} ${statusInfo.badgeClass}`}>
-                          {statusInfo.label}
-                        </span>
-                      </td>
-                      <td className={styles.td} style={{ textAlign: "right" }}>
-                        <Link
-                          href={`${ROUTES.TITLES}/${t.id}`}
-                          className={pageStyles.actionBtn}
-                          title="Ver Detalhes do Título"
-                        >
-                          <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                            <Eye size={14} />
-                            <span>Detalhes</span>
-                          </span>
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                        <Eye size={15} />
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
 
         <Pagination
           page={page}
