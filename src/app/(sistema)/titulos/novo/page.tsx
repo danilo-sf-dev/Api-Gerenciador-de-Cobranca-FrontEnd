@@ -10,6 +10,7 @@ import { CustomerSearchSelect } from "@/components/forms/customer-search-select"
 import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
 import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function NewTitlePage() {
   const router = useRouter();
@@ -84,15 +85,22 @@ export default function NewTitlePage() {
       style={{ display: "flex", flexDirection: "column", gap: "var(--space-lg)", maxWidth: 600 }}
     >
       <div>
-        <button
-          type="button"
-          onClick={() => router.push(ROUTES.TITLES)}
-          className={`${styles.btn} ${styles.btnSecondary}`}
-          style={{ display: "inline-flex", alignItems: "center", gap: 8, height: 36, padding: "8px 12px", marginBottom: 12 }}
+        <Link
+          href={ROUTES.TITLES}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: "0.875rem",
+            color: "var(--colors-muted)",
+            textDecoration: "none",
+            cursor: "pointer",
+            marginBottom: 12,
+          }}
         >
-          <ArrowLeft size={16} />
+          <ArrowLeft size={14} />
           <span>Voltar para Títulos</span>
-        </button>
+        </Link>
       </div>
 
       <div>
