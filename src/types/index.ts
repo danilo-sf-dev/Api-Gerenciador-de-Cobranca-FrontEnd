@@ -92,6 +92,10 @@ export type Title = {
   status: TitleStatus;
   paymentMethod?: PaymentMethod;
   paidAt?: string;
+  installmentNumber?: number; // Ex: 1 for 1/3, 2 for 2/3
+  totalInstallments?: number; // Ex: 3 for 1/3
+  orderNumber?: string; // Número do Pedido
+  invoiceNumber?: string; // Número da Nota Fiscal
   parentTitleId?: string; // Reference to origin title if renegotiated
   renegotiationId?: string;
   isPaidByRenegotiation: boolean;

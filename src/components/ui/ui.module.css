@@ -101,6 +101,32 @@
   border-color: var(--status-late-text);
 }
 
+.select {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  border: 1px solid var(--colors-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--colors-bg);
+  color: var(--colors-ink);
+  height: 38px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.select:focus {
+  border-color: var(--colors-accent);
+  outline: none;
+}
+
+.select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--colors-surface);
+}
+
 .errorText {
   font-size: 0.75rem;
   color: var(--status-late-text);

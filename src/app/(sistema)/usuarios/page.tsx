@@ -13,6 +13,8 @@ import { PERMISSIONS } from "@/lib/constants/permissions";
 import { formatDate, formatDateTime } from "@/lib/formatters/date";
 import { UserPlus, UserCog, RefreshCw, XCircle, Search } from "lucide-react";
 import styles from "@/components/ui/ui.module.css";
+import { ConfirmDialog } from "@/components/feedback/confirm-dialog";
+import { Toast } from "@/components/feedback/toast";
 
 export default function UsersListPage() {
   const {
@@ -27,6 +29,21 @@ export default function UsersListPage() {
 
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  // Confirmation dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    isDanger?: boolean;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   // Users params
   const [search, setSearch] = useState("");
@@ -47,6 +64,7 @@ export default function UsersListPage() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRoleId, setInviteRoleId] = useState("");
   const [inviteError, setInviteError] = useState("");
+  const [inviteErrors, setInviteErrors] = useState<Record<string, string>>({});
   const [inviteLoading, setInviteLoading] = useState(false);
 
   // Change Role Modal State
@@ -124,23 +142,34 @@ export default function UsersListPage() {
   const handleInviteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setInviteError("");
+    setInviteErrors({});
 
-    if (!inviteName.trim() || !inviteEmail.trim() || !inviteRoleId) {
-      setInviteError("Por favor, preencha todos os campos.");
+    const errors: Record<string, string> = {};
+    if (!inviteName.trim()) errors.name = "O nome completo é obrigatório.";
+    if (!inviteEmail.trim()) {
+      errors.email = "O e-mail corporativo é obrigatório.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inviteEmail.trim())) {
+      errors.email = "E-mail em formato inválido.";
+    }
+    if (!inviteRoleId) errors.roleId = "Selecione o cargo inicial.";
+
+    if (Object.keys(errors).length > 0) {
+      setInviteErrors(errors);
       return;
     }
 
     setInviteLoading(true);
     try {
       await UsersService.inviteUser({
-        name: inviteName,
-        email: inviteEmail,
+        name: inviteName.trim(),
+        email: inviteEmail.trim(),
         roleId: inviteRoleId,
       });
       setIsInviteOpen(false);
       setInviteName("");
       setInviteEmail("");
       setInviteRoleId("");
+      setInviteErrors({});
       loadUsers();
     } catch (err: any) {
       setInviteError(err.message || "Erro ao enviar convite.");
@@ -151,38 +180,92 @@ export default function UsersListPage() {
 
   const handleResendInvite = async (id: string) => {
     if (!hasPermission(PERMISSIONS.RESEND_INVITATION)) {
-      alert("Sem permissão.");
+      setToast({ message: "Você não possui permissão para reenviar convites.", type: "error" });
       return;
     }
     try {
       await UsersService.resendInvitation(id);
-      alert("Convite reenviado com sucesso!");
+      setToast({ message: "Convite reenviado com sucesso!", type: "success" });
     } catch (err: any) {
-      alert(err.message);
+      setToast({ message: err.message || "Erro ao reenviar convite.", type: "error" });
     }
   };
 
-  const handleCancelInvite = async (id: string) => {
+  const handleCancelInvite = (id: string) => {
     if (!hasPermission(PERMISSIONS.CANCEL_INVITATION)) {
-      alert("Sem permissão.");
+      setToast({ message: "Você não possui permissão para cancelar convites.", type: "error" });
       return;
     }
-    if (window.confirm("Tem certeza de que deseja cancelar e excluir este convite pendente?")) {
-      try {
-        await UsersService.cancelInvitation(id);
-        loadUsers();
-      } catch (err: any) {
-        alert(err.message);
-      }
+    setConfirmDialog({
+      isOpen: true,
+      title: "Cancelar Convite",
+      message: "Tem certeza de que deseja cancelar e excluir este convite pendente?",
+      isDanger: true,
+      onConfirm: async () => {
+        try {
+          await UsersService.cancelInvitation(id);
+          setToast({ message: "Convite cancelado com sucesso!", type: "success" });
+          loadUsers();
+        } catch (err: any) {
+          setToast({ message: err.message || "Erro ao cancelar convite.", type: "error" });
+        } finally {
+          setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+        }
+      },
+    });
+  };
+
+  const handleToggleUserStatus = (targetUser: User) => {
+    if (!hasPermission(PERMISSIONS.TOGGLE_USER_STATUS)) {
+      setToast({
+        message: "Você não possui permissão para alterar o status do usuário.",
+        type: "error",
+      });
+      return;
     }
+
+    const canManage =
+      currentUser?.role.name === "Owner" || currentHierarchyLevel < targetUser.role.hierarchyLevel;
+
+    if (!canManage) {
+      setToast({
+        message: `Permissão negada. Você não possui nível hierárquico suficiente para alterar o status de ${targetUser.name}.`,
+        type: "error",
+      });
+      return;
+    }
+
+    const nextStatus = targetUser.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    const actionText = nextStatus === "INACTIVE" ? "inativar" : "reativar";
+
+    setConfirmDialog({
+      isOpen: true,
+      title: `${nextStatus === "INACTIVE" ? "Inativar" : "Reativar"} Usuário`,
+      message: `Tem certeza de que deseja ${actionText} o usuário ${targetUser.name}?`,
+      isDanger: nextStatus === "INACTIVE",
+      onConfirm: async () => {
+        try {
+          await UsersService.changeUserStatus(targetUser.id, nextStatus);
+          setToast({
+            message: `Usuário ${nextStatus === "INACTIVE" ? "inativado" : "reativado"} com sucesso!`,
+            type: "success",
+          });
+          loadUsers();
+        } catch (err: any) {
+          setToast({ message: err.message || "Erro ao alterar status do usuário.", type: "error" });
+        } finally {
+          setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+        }
+      },
+    });
   };
 
   const openChangeRoleModal = (user: User) => {
-    // Check hierarchy: current user must be higher than selected user (numerically lower) OR be Owner
     if (currentUser?.role.name !== "Owner" && currentHierarchyLevel >= user.role.hierarchyLevel) {
-      alert(
-        `Permissão negada. Você não possui nível hierárquico suficiente para alterar o cargo de ${user.name}.`,
-      );
+      setToast({
+        message: `Permissão negada. Você não possui nível hierárquico suficiente para alterar o cargo de ${user.name}.`,
+        type: "error",
+      });
       return;
     }
 
@@ -234,6 +317,7 @@ export default function UsersListPage() {
         endDate: promotionType === "TEMPORARY" ? endDate : undefined,
       });
       setIsRoleOpen(false);
+      setToast({ message: "Cargo alterado com sucesso!", type: "success" });
       loadUsers();
       loadHistory();
     } catch (err: any) {
@@ -245,6 +329,19 @@ export default function UsersListPage() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-lg)" }}>
+      {/* Toast feedback */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog((prev) => ({ ...prev, isOpen: false }))}
+        isDanger={confirmDialog.isDanger}
+      />
+
       {/* Page Header */}
       <div className="pageHeader">
         <div className="pageHeaderText">
@@ -324,6 +421,11 @@ export default function UsersListPage() {
               users.map((u) => {
                 const isPending = u.status === "PENDING_INVITATION";
                 const isActive = u.status === "ACTIVE";
+                const canToggleStatus =
+                  !isPending &&
+                  hasPermission(PERMISSIONS.TOGGLE_USER_STATUS) &&
+                  (currentUser?.role.name === "Owner" ||
+                    currentHierarchyLevel < u.role.hierarchyLevel);
 
                 let statusBadgeClass = styles.badgeCanceled;
                 let statusText = "Inativo";
@@ -396,6 +498,75 @@ export default function UsersListPage() {
                             title="Alterar Cargo"
                           >
                             <UserCog size={14} /> Cargo
+                          </button>
+                        )}
+                        {canToggleStatus && (
+                          <button
+                            onClick={() => handleToggleUserStatus(u)}
+                            className={styles.btn}
+                            style={{
+                              padding: 6,
+                              backgroundColor: "transparent",
+                              border: "none",
+                              cursor: "pointer",
+                            }}
+                            title={isActive ? "Inativar usuário" : "Reativar usuário"}
+                            aria-label={isActive ? "Inativar" : "Reativar"}
+                          >
+                            {isActive ? (
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  width: 28,
+                                  height: 16,
+                                  borderRadius: 9999,
+                                  backgroundColor: "var(--status-paid-text)",
+                                  position: "relative",
+                                  transition: "background-color 0.2s",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    position: "absolute",
+                                    right: 2,
+                                    width: 12,
+                                    height: 12,
+                                    borderRadius: "50%",
+                                    backgroundColor: "#fff",
+                                    transition: "right 0.2s",
+                                  }}
+                                />
+                              </span>
+                            ) : (
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  width: 28,
+                                  height: 16,
+                                  borderRadius: 9999,
+                                  backgroundColor: "var(--colors-border)",
+                                  position: "relative",
+                                  transition: "background-color 0.2s",
+                                  border: "1px solid var(--colors-muted)",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    position: "absolute",
+                                    left: 2,
+                                    width: 12,
+                                    height: 12,
+                                    borderRadius: "50%",
+                                    backgroundColor: "var(--colors-muted)",
+                                    transition: "left 0.2s",
+                                  }}
+                                />
+                              </span>
+                            )}
                           </button>
                         )}
                       </div>
@@ -512,7 +683,7 @@ export default function UsersListPage() {
       {/* Invite Modal */}
       {isInviteOpen && (
         <div className={styles.modalOverlay}>
-          <form onSubmit={handleInviteSubmit} className={styles.modalContent}>
+          <form onSubmit={handleInviteSubmit} noValidate className={styles.modalContent}>
             <div className={styles.modalHeader}>
               <span className={styles.modalTitle}>Convidar Novo Usuário</span>
               <button
@@ -541,36 +712,47 @@ export default function UsersListPage() {
               )}
 
               <div className={styles.inputGroup}>
-                <label className={styles.label}>Nome Completo</label>
+                <label className={styles.label}>Nome Completo *</label>
                 <input
                   type="text"
-                  className={styles.input}
+                  className={`${styles.input} ${inviteErrors.name ? styles.inputError : ""}`}
                   value={inviteName}
                   onChange={(e) => setInviteName(e.target.value)}
                   placeholder="Nome do usuário"
-                  required
                 />
+                {inviteErrors.name && (
+                  <span
+                    style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}
+                  >
+                    {inviteErrors.name}
+                  </span>
+                )}
               </div>
 
               <div className={styles.inputGroup}>
-                <label className={styles.label}>E-mail Corporativo</label>
+                <label className={styles.label}>E-mail Corporativo *</label>
                 <input
                   type="email"
-                  className={styles.input}
+                  className={`${styles.input} ${inviteErrors.email ? styles.inputError : ""}`}
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="usuario@empresa.com"
-                  required
                 />
+                {inviteErrors.email && (
+                  <span
+                    style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}
+                  >
+                    {inviteErrors.email}
+                  </span>
+                )}
               </div>
 
               <div className={styles.inputGroup}>
-                <label className={styles.label}>Cargo Inicial</label>
+                <label className={styles.label}>Cargo Inicial *</label>
                 <select
-                  className={styles.input}
+                  className={`${styles.select} ${inviteErrors.roleId ? styles.inputError : ""}`}
                   value={inviteRoleId}
                   onChange={(e) => setInviteRoleId(e.target.value)}
-                  required
                 >
                   <option value="">Selecione um cargo corporativo...</option>
                   {roles.map((r) => (
@@ -579,6 +761,13 @@ export default function UsersListPage() {
                     </option>
                   ))}
                 </select>
+                {inviteErrors.roleId && (
+                  <span
+                    style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}
+                  >
+                    {inviteErrors.roleId}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -605,7 +794,7 @@ export default function UsersListPage() {
       {/* Change Role Modal */}
       {isRoleOpen && selectedUser && (
         <div className={styles.modalOverlay}>
-          <form onSubmit={handleRoleSubmit} className={styles.modalContent}>
+          <form onSubmit={handleRoleSubmit} noValidate className={styles.modalContent}>
             <div className={styles.modalHeader}>
               <span className={styles.modalTitle}>Alterar Perfil de {selectedUser.name}</span>
               <button
@@ -634,12 +823,11 @@ export default function UsersListPage() {
               )}
 
               <div className={styles.inputGroup}>
-                <label className={styles.label}>Novo Cargo de Destino</label>
+                <label className={styles.label}>Novo Cargo de Destino *</label>
                 <select
-                  className={styles.input}
+                  className={styles.select}
                   value={targetRoleId}
                   onChange={(e) => setTargetRoleId(e.target.value)}
-                  required
                 >
                   {roles.map((r) => (
                     <option key={r.id} value={r.id}>
@@ -651,7 +839,7 @@ export default function UsersListPage() {
 
               {/* Assignment type: Permanent or Temporary toggle */}
               <div className={styles.inputGroup}>
-                <label className={styles.label}>Tipo de Atribuição</label>
+                <label className={styles.label}>Tipo de Atribuição *</label>
                 <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
                   <label
                     style={{
