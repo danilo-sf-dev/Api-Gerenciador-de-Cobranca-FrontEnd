@@ -15,6 +15,7 @@ import { formatPhone } from "@/lib/formatters/phone";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { ROUTES } from "@/lib/constants/routes";
+import { CurrencyInput } from "@/components/forms/currency-input";
 import {
   ArrowLeft,
   Calendar,
@@ -27,6 +28,8 @@ import {
   CheckCircle2,
   X,
   FileText,
+  Edit2,
+  XCircle,
 } from "lucide-react";
 import styles from "@/components/ui/ui.module.css";
 import detailStyles from "./detail.module.css";
@@ -59,12 +62,19 @@ export default function TitleDetailPage() {
   // Modals state
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // Payment form state
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("PIX");
   const [paidAt, setPaidAt] = useState("");
   const [registeringPayment, setRegisteringPayment] = useState(false);
   const [cancelingTitle, setCancelingTitle] = useState(false);
+
+  // Edit form state
+  const [editOriginalAmount, setEditOriginalAmount] = useState<number>(0);
+  const [editIssueDate, setEditIssueDate] = useState("");
+  const [editDueDate, setEditDueDate] = useState("");
+  const [editingTitle, setEditingTitle] = useState(false);
 
   const loadAllData = async () => {
     setLoading(true);
@@ -88,10 +98,49 @@ export default function TitleDetailPage() {
   useEffect(() => {
     if (id) {
       loadAllData();
-      // Set default paidAt date to today
       setPaidAt(new Date().toISOString().split("T")[0]);
     }
   }, [id]);
+
+  const handleOpenEditModal = () => {
+    if (!title) return;
+    setEditOriginalAmount(title.originalAmount);
+    setEditIssueDate(title.issueDate);
+    setEditDueDate(title.dueDate);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editOriginalAmount || editOriginalAmount <= 0) {
+      setToast({ message: "Informe um valor original válido.", type: "error" });
+      return;
+    }
+    if (!editIssueDate || !editDueDate) {
+      setToast({ message: "Informe as datas de emissão e vencimento.", type: "error" });
+      return;
+    }
+    if (editDueDate < editIssueDate) {
+      setToast({ message: "Data de vencimento não pode ser anterior à emissão.", type: "error" });
+      return;
+    }
+
+    setEditingTitle(true);
+    try {
+      await TitlesService.updateTitle(id, {
+        originalAmount: editOriginalAmount,
+        issueDate: editIssueDate,
+        dueDate: editDueDate,
+      });
+      setToast({ message: "Título atualizado com sucesso!", type: "success" });
+      setIsEditModalOpen(false);
+      loadAllData();
+    } catch (err: any) {
+      setToast({ message: err.message || "Erro ao atualizar título.", type: "error" });
+    } finally {
+      setEditingTitle(false);
+    }
+  };
 
   const handleRegisterPayment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,14 +212,10 @@ export default function TitleDetailPage() {
   const isPaid = title.status === "PAID";
   const isRenegotiated = title.status === "RENEGOTIATED";
 
-  // Registrar pagamento is only available if NOT paid, canceled, or renegotiated
+  const canEdit = isUpcoming && hasPermission(PERMISSIONS.EDIT_TITLE);
   const canRegisterPayment =
     !isPaid && !isCanceled && !isRenegotiated && hasPermission(PERMISSIONS.REGISTER_PAYMENT);
-
-  // Cancelar is only available if UPCOMING
   const canCancel = isUpcoming && hasPermission(PERMISSIONS.CANCEL_TITLE);
-
-  // Renegotiar is only available if LATE
   const canRenegotiate = isLate && hasPermission(PERMISSIONS.RENEGOTIATE_TITLE);
 
   const statusInfo = STATUS_DETAILS[title.status] || { label: title.status, badgeClass: "" };
@@ -225,6 +270,17 @@ export default function TitleDetailPage() {
         </div>
 
         <div className={detailStyles.actionButtons}>
+          {canEdit && (
+            <button
+              onClick={handleOpenEditModal}
+              className={`${styles.btn} ${styles.btnSecondary}`}
+              type="button"
+            >
+              <Edit2 size={16} />
+              <span>Editar Título</span>
+            </button>
+          )}
+
           {canCancel && (
             <button
               onClick={() => setIsCancelConfirmOpen(true)}
@@ -309,6 +365,40 @@ export default function TitleDetailPage() {
               ) : (
                 "Cadastro Direto"
               )}
+            </span>
+          </div>
+
+          <div className={detailStyles.infoBlock}>
+            <span className={detailStyles.infoLabel}>Tipo de Pagamento</span>
+            <span className={detailStyles.infoValue}>
+              {title.paymentMethod === "BOLETO"
+                ? "Boleto Bancário"
+                : title.paymentMethod === "CARD"
+                  ? "Cartão de Crédito"
+                  : "PIX"}
+            </span>
+          </div>
+
+          <div className={detailStyles.infoBlock}>
+            <span className={detailStyles.infoLabel}>Forma de Parcelamento</span>
+            <span className={detailStyles.infoValue}>
+              {title.totalInstallments && title.totalInstallments > 1
+                ? `Parcela ${title.installmentNumber || 1}/${title.totalInstallments}`
+                : "À Vista (1x)"}
+            </span>
+          </div>
+
+          <div className={detailStyles.infoBlock}>
+            <span className={detailStyles.infoLabel}>Nº do Pedido</span>
+            <span className={`${detailStyles.infoValueMono} tabular-nums`}>
+              {title.orderNumber || "—"}
+            </span>
+          </div>
+
+          <div className={detailStyles.infoBlock}>
+            <span className={detailStyles.infoLabel}>Nº da Nota Fiscal</span>
+            <span className={`${detailStyles.infoValueMono} tabular-nums`}>
+              {title.invoiceNumber || "—"}
             </span>
           </div>
         </div>
@@ -544,7 +634,7 @@ export default function TitleDetailPage() {
       <div className={styles.card}>
         <div className={detailStyles.sectionHeader}>
           <History size={18} style={{ color: "var(--colors-accent)" }} />
-          <h2 className={detailStyles.sectionTitle}>Histórico de Alterações (Log de Auditoria)</h2>
+          <h2 className={detailStyles.sectionTitle}>Histórico de Alterações</h2>
         </div>
 
         <div className={detailStyles.timeline}>
@@ -587,6 +677,94 @@ export default function TitleDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Edit Title Modal */}
+      {isEditModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsEditModalOpen(false)}>
+          <form
+            onSubmit={handleEditSubmit}
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <span className={styles.modalTitle}>Editar Título #{title.id}</span>
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                className={styles.modalCloseBtn}
+              >
+                <XCircle size={16} />
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Cliente (Somente Leitura)</label>
+                <input
+                  type="text"
+                  className={styles.input}
+                  value={title.customerName}
+                  disabled
+                  style={{ backgroundColor: "var(--colors-surface)", color: "var(--colors-muted)" }}
+                />
+              </div>
+
+              <div className={styles.inputGroup} style={{ marginTop: 12 }}>
+                <label className={styles.label}>Valor Original *</label>
+                <CurrencyInput value={editOriginalAmount} onChange={setEditOriginalAmount} />
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "var(--space-md)",
+                  marginTop: 12,
+                }}
+              >
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>Data de Emissão *</label>
+                  <input
+                    type="date"
+                    className={styles.input}
+                    value={editIssueDate}
+                    onChange={(e) => setEditIssueDate(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>Data de Vencimento *</label>
+                  <input
+                    type="date"
+                    className={styles.input}
+                    value={editDueDate}
+                    onChange={(e) => setEditDueDate(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                className={`${styles.btn} ${styles.btnSecondary}`}
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={editingTitle}
+                className={`${styles.btn} ${styles.btnPrimary}`}
+              >
+                {editingTitle ? "Salvando..." : "Salvar Alterações"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Payment Registrar Modal */}
       {isPaymentModalOpen && (
@@ -644,12 +822,11 @@ export default function TitleDetailPage() {
                 </div>
 
                 <div className={styles.inputGroup}>
-                  <label className={styles.label}>Método de Pagamento</label>
+                  <label className={styles.label}>Método de Pagamento *</label>
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                    className={styles.input}
-                    style={{ height: 38 }}
+                    className={styles.select}
                   >
                     <option value="PIX">PIX</option>
                     <option value="BOLETO">Boleto Bancário</option>
@@ -658,7 +835,7 @@ export default function TitleDetailPage() {
                 </div>
 
                 <div className={styles.inputGroup}>
-                  <label className={styles.label}>Data do Pagamento</label>
+                  <label className={styles.label}>Data do Pagamento *</label>
                   <input
                     type="date"
                     value={paidAt}

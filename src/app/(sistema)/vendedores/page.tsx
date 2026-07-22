@@ -12,8 +12,6 @@ import { PERMISSIONS } from "@/lib/constants/permissions";
 import { formatCPF } from "@/lib/formatters/cpf";
 import { formatPhone } from "@/lib/formatters/phone";
 import { Edit2, Plus, Search, XCircle } from "lucide-react";
-import Link from "next/link";
-import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
 import { ConfirmDialog } from "@/components/feedback/confirm-dialog";
 import { FormField } from "@/components/forms/form-field";
@@ -217,10 +215,7 @@ export default function SellersListPage() {
         </div>
 
         {hasPermission(PERMISSIONS.CREATE_SELLER) && (
-          <button
-            onClick={handleOpenCreate}
-            className={`${styles.btn} ${styles.btnPrimary}`}
-          >
+          <button onClick={handleOpenCreate} className={`${styles.btn} ${styles.btnPrimary}`}>
             <Plus size={16} />
             <span>Novo Vendedor</span>
           </button>
@@ -305,7 +300,12 @@ export default function SellersListPage() {
                         <button
                           onClick={() => handleOpenEdit(s)}
                           className={styles.btn}
-                          style={{ padding: 6, backgroundColor: "transparent", border: "none", cursor: "pointer" }}
+                          style={{
+                            padding: 6,
+                            backgroundColor: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                          }}
                           title="Editar"
                         >
                           <Edit2 size={16} style={{ color: "var(--colors-accent)" }} />
@@ -420,12 +420,15 @@ export default function SellersListPage() {
         <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
           <form
             onSubmit={handleFormSubmit}
+            noValidate
             className={styles.modalContent}
             onClick={(e) => e.stopPropagation()}
           >
             <div className={styles.modalHeader}>
               <span className={styles.modalTitle}>
-                {selectedSeller ? `Editar Vendedor - ${selectedSeller.name}` : "Cadastrar Novo Vendedor"}
+                {selectedSeller
+                  ? `Editar Vendedor - ${selectedSeller.name}`
+                  : "Cadastrar Novo Vendedor"}
               </span>
               <button
                 type="button"
@@ -478,21 +481,35 @@ export default function SellersListPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Digite o nome do vendedor"
-                  required
                 />
                 {errors.name && (
-                  <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                  <span
+                    style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}
+                  >
                     {errors.name}
                   </span>
                 )}
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-md)", marginTop: 12 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "var(--space-md)",
+                  marginTop: 12,
+                }}
+              >
                 <div className={styles.inputGroup}>
                   <label className={styles.label}>CPF *</label>
                   <CpfInput value={cpf} onChange={setCpf} error={!!errors.cpf} />
                   {errors.cpf && (
-                    <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--status-late-text)",
+                        marginTop: 4,
+                      }}
+                    >
                       {errors.cpf}
                     </span>
                   )}
@@ -502,7 +519,13 @@ export default function SellersListPage() {
                   <label className={styles.label}>Celular (com DDD) *</label>
                   <PhoneInput value={phone} onChange={setPhone} error={!!errors.phone} />
                   {errors.phone && (
-                    <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--status-late-text)",
+                        marginTop: 4,
+                      }}
+                    >
                       {errors.phone}
                     </span>
                   )}
@@ -519,7 +542,9 @@ export default function SellersListPage() {
                   placeholder="vendedor@empresa.com"
                 />
                 {errors.email && (
-                  <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                  <span
+                    style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}
+                  >
                     {errors.email}
                   </span>
                 )}

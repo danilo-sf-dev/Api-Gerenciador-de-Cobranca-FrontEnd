@@ -10,8 +10,6 @@ import { TableLoading } from "@/components/data-table/table-loading";
 import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { Edit2, Plus, Search, XCircle } from "lucide-react";
-import Link from "next/link";
-import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
 
 export default function RolesListPage() {
@@ -97,7 +95,6 @@ export default function RolesListPage() {
     }
   };
 
-
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearchQuery(search);
@@ -170,10 +167,7 @@ export default function RolesListPage() {
         </div>
 
         {hasPermission(PERMISSIONS.CREATE_ROLE) && (
-          <button
-            onClick={handleOpenCreate}
-            className={`${styles.btn} ${styles.btnPrimary}`}
-          >
+          <button onClick={handleOpenCreate} className={`${styles.btn} ${styles.btnPrimary}`}>
             <Plus size={16} />
             <span>Novo Cargo</span>
           </button>
@@ -294,7 +288,12 @@ export default function RolesListPage() {
                         <button
                           onClick={() => handleOpenEdit(r)}
                           className={styles.btn}
-                          style={{ padding: 6, backgroundColor: "transparent", border: "none", cursor: "pointer" }}
+                          style={{
+                            padding: 6,
+                            backgroundColor: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                          }}
                           title="Editar Cargo"
                         >
                           <Edit2 size={16} style={{ color: "var(--colors-accent)" }} />
@@ -407,6 +406,7 @@ export default function RolesListPage() {
         <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
           <form
             onSubmit={handleFormSubmit}
+            noValidate
             className={styles.modalContent}
             onClick={(e) => e.stopPropagation()}
           >
@@ -442,12 +442,13 @@ export default function RolesListPage() {
 
               {/* Check if editing a fundamental role to disable name editing */}
               {(() => {
-                const isFundamental = !!(selectedRole && (
-                  selectedRole.name === "Owner" ||
-                  selectedRole.name === "Gerente" ||
-                  selectedRole.name === "Vendedor" ||
-                  selectedRole.name === "Funcionário"
-                ));
+                const isFundamental = !!(
+                  selectedRole &&
+                  (selectedRole.name === "Owner" ||
+                    selectedRole.name === "Gerente" ||
+                    selectedRole.name === "Vendedor" ||
+                    selectedRole.name === "Funcionário")
+                );
                 return (
                   <>
                     <div className={styles.inputGroup}>
@@ -461,18 +462,32 @@ export default function RolesListPage() {
                         disabled={isFundamental}
                         style={
                           isFundamental
-                            ? { backgroundColor: "var(--colors-surface)", color: "var(--colors-muted)" }
+                            ? {
+                                backgroundColor: "var(--colors-surface)",
+                                color: "var(--colors-muted)",
+                              }
                             : {}
                         }
-                        required
                       />
                       {errors.name && (
-                        <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                        <span
+                          style={{
+                            fontSize: "0.75rem",
+                            color: "var(--status-late-text)",
+                            marginTop: 4,
+                          }}
+                        >
                           {errors.name}
                         </span>
                       )}
                       {isFundamental && (
-                        <p style={{ fontSize: "0.75rem", color: "var(--colors-muted)", marginTop: 4 }}>
+                        <p
+                          style={{
+                            fontSize: "0.75rem",
+                            color: "var(--colors-muted)",
+                            marginTop: 4,
+                          }}
+                        >
                           Cargos padrão do sistema não podem ter seus nomes editados.
                         </p>
                       )}
@@ -490,22 +505,42 @@ export default function RolesListPage() {
                         disabled={isFundamental}
                         style={
                           isFundamental
-                            ? { backgroundColor: "var(--colors-surface)", color: "var(--colors-muted)" }
+                            ? {
+                                backgroundColor: "var(--colors-surface)",
+                                color: "var(--colors-muted)",
+                              }
                             : {}
                         }
-                        required
                       />
                       {errors.hierarchyLevel && (
-                        <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                        <span
+                          style={{
+                            fontSize: "0.75rem",
+                            color: "var(--status-late-text)",
+                            marginTop: 4,
+                          }}
+                        >
                           {errors.hierarchyLevel}
                         </span>
                       )}
                       {isFundamental ? (
-                        <p style={{ fontSize: "0.75rem", color: "var(--colors-muted)", marginTop: 4 }}>
+                        <p
+                          style={{
+                            fontSize: "0.75rem",
+                            color: "var(--colors-muted)",
+                            marginTop: 4,
+                          }}
+                        >
                           O nível hierárquico de cargos padrão é fixado pelo sistema.
                         </p>
                       ) : (
-                        <p style={{ fontSize: "0.75rem", color: "var(--colors-muted)", marginTop: 4 }}>
+                        <p
+                          style={{
+                            fontSize: "0.75rem",
+                            color: "var(--colors-muted)",
+                            marginTop: 4,
+                          }}
+                        >
                           Digite de 1 (mais alto) a 10 (mais baixo).
                         </p>
                       )}

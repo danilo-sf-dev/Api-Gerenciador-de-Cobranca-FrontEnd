@@ -14,8 +14,6 @@ import { formatCNPJ } from "@/lib/formatters/cnpj";
 import { formatPhone } from "@/lib/formatters/phone";
 import { formatDate } from "@/lib/formatters/date";
 import { Edit2, Plus, Search, XCircle } from "lucide-react";
-import Link from "next/link";
-import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
 import { FormField } from "@/components/forms/form-field";
 import { CpfInput } from "@/components/forms/cpf-input";
@@ -211,10 +209,7 @@ export default function CustomersListPage() {
         </div>
 
         {hasPermission(PERMISSIONS.CREATE_CUSTOMER) && (
-          <button
-            onClick={handleOpenCreate}
-            className={`${styles.btn} ${styles.btnPrimary}`}
-          >
+          <button onClick={handleOpenCreate} className={`${styles.btn} ${styles.btnPrimary}`}>
             <Plus size={16} />
             <span>Novo Cliente</span>
           </button>
@@ -320,7 +315,12 @@ export default function CustomersListPage() {
                       <button
                         onClick={() => handleOpenEdit(c)}
                         className={styles.btn}
-                        style={{ padding: 6, backgroundColor: "transparent", border: "none", cursor: "pointer" }}
+                        style={{
+                          padding: 6,
+                          backgroundColor: "transparent",
+                          border: "none",
+                          cursor: "pointer",
+                        }}
                         title="Editar Cliente"
                       >
                         <Edit2 size={16} style={{ color: "var(--colors-accent)" }} />
@@ -347,12 +347,15 @@ export default function CustomersListPage() {
         <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
           <form
             onSubmit={handleFormSubmit}
+            noValidate
             className={styles.modalContent}
             onClick={(e) => e.stopPropagation()}
           >
             <div className={styles.modalHeader}>
               <span className={styles.modalTitle}>
-                {selectedCustomer ? `Editar Cliente - ${selectedCustomer.name}` : "Cadastrar Novo Cliente"}
+                {selectedCustomer
+                  ? `Editar Cliente - ${selectedCustomer.name}`
+                  : "Cadastrar Novo Cliente"}
               </span>
               <button
                 type="button"
@@ -388,20 +391,43 @@ export default function CustomersListPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Digite o nome completo ou razão social"
-                  required
                 />
                 {errors.name && (
-                  <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                  <span
+                    style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}
+                  >
                     {errors.name}
                   </span>
                 )}
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-md)", marginTop: 12 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "var(--space-md)",
+                  marginTop: 12,
+                }}
+              >
                 <div className={styles.inputGroup}>
                   <label className={styles.label}>Tipo de Documento</label>
-                  <div style={{ display: "flex", gap: "var(--space-md)", height: 38, alignItems: "center" }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.875rem", cursor: "pointer" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "var(--space-md)",
+                      height: 38,
+                      alignItems: "center",
+                    }}
+                  >
+                    <label
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        fontSize: "0.875rem",
+                        cursor: "pointer",
+                      }}
+                    >
                       <input
                         type="radio"
                         name="documentType"
@@ -411,7 +437,15 @@ export default function CustomersListPage() {
                       />
                       <span>CPF</span>
                     </label>
-                    <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.875rem", cursor: "pointer" }}>
+                    <label
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        fontSize: "0.875rem",
+                        cursor: "pointer",
+                      }}
+                    >
                       <input
                         type="radio"
                         name="documentType"
@@ -432,14 +466,27 @@ export default function CustomersListPage() {
                     <CnpjInput value={document} onChange={setDocument} error={!!errors.document} />
                   )}
                   {errors.document && (
-                    <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--status-late-text)",
+                        marginTop: 4,
+                      }}
+                    >
                       {errors.document}
                     </span>
                   )}
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-md)", marginTop: 12 }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "var(--space-md)",
+                  marginTop: 12,
+                }}
+              >
                 <div className={styles.inputGroup}>
                   <label className={styles.label}>E-mail (Opcional)</label>
                   <input
@@ -450,7 +497,13 @@ export default function CustomersListPage() {
                     placeholder="cliente@exemplo.com"
                   />
                   {errors.email && (
-                    <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--status-late-text)",
+                        marginTop: 4,
+                      }}
+                    >
                       {errors.email}
                     </span>
                   )}
@@ -460,7 +513,13 @@ export default function CustomersListPage() {
                   <label className={styles.label}>Telefone (Opcional)</label>
                   <PhoneInput value={phone} onChange={setPhone} error={!!errors.phone} />
                   {errors.phone && (
-                    <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        color: "var(--status-late-text)",
+                        marginTop: 4,
+                      }}
+                    >
                       {errors.phone}
                     </span>
                   )}
@@ -475,7 +534,9 @@ export default function CustomersListPage() {
                   error={!!errors.sellerCode}
                 />
                 {errors.sellerCode && (
-                  <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                  <span
+                    style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}
+                  >
                     {errors.sellerCode}
                   </span>
                 )}

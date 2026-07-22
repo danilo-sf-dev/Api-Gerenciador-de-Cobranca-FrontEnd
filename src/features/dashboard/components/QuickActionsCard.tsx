@@ -12,7 +12,7 @@ export function QuickActionsCard() {
       <h3 style={{ fontSize: "0.9375rem", fontWeight: 600 }}>Ações Rápidas</h3>
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-xs)" }}>
         <Link
-          href={`${ROUTES.TITLES}/novo`}
+          href={`${ROUTES.TITLES}?novo=true`}
           className={uiStyles.btn}
           style={{
             justifyContent: "flex-start",

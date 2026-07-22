@@ -6,6 +6,8 @@ export class TitlesService {
     page: number;
     size?: number;
     statuses?: TitleStatus[]; // Multiple selection filter
+    paymentMethod?: PaymentMethod;
+    orderOrInvoice?: string;
     sellerCode?: string;
     dueDateStart?: string;
     dueDateEnd?: string;
@@ -28,7 +30,22 @@ export class TitlesService {
       items = items.filter((t) => t.sellerCode === params.sellerCode);
     }
 
-    // 3. Filter by due date range
+    // 3. Filter by payment method
+    if (params.paymentMethod) {
+      items = items.filter((t) => t.paymentMethod === params.paymentMethod);
+    }
+
+    // 4. Filter by order or invoice number
+    if (params.orderOrInvoice) {
+      const q = params.orderOrInvoice.toLowerCase().trim();
+      items = items.filter(
+        (t) =>
+          (t.orderNumber && t.orderNumber.toLowerCase().includes(q)) ||
+          (t.invoiceNumber && t.invoiceNumber.toLowerCase().includes(q)),
+      );
+    }
+
+    // 5. Filter by due date range
     if (params.dueDateStart) {
       const start = new Date(params.dueDateStart).getTime();
       items = items.filter((t) => new Date(t.dueDate).getTime() >= start);
@@ -38,7 +55,7 @@ export class TitlesService {
       items = items.filter((t) => new Date(t.dueDate).getTime() <= end);
     }
 
-    // 4. Search by client name or document
+    // 6. Search by client name, document or title ID
     if (params.search) {
       const cleanSearch = params.search.toLowerCase().trim();
       const digits = cleanSearch.replace(/\D/g, "");
@@ -108,58 +125,102 @@ export class TitlesService {
   }
 
   static async createTitle(data: {
-    customerId: string;
-    originalAmount: number;
-    dueDate: string;
-    issueDate: string;
+    customerId?: string;
+    originalAmount?: number;
+    dueDate?: string;
+    issueDate?: string;
+    paymentMethod?: PaymentMethod;
+    installmentsCount?: number;
+    installmentIntervalDays?: number;
+    orderNumber?: string;
+    invoiceNumber?: string;
   }): Promise<Title> {
     await new Promise((resolve) => setTimeout(resolve, 150));
 
-    const customer = db.customers.find((c) => c.id === data.customerId);
-    if (!customer) throw new Error("Cliente não cadastrado no sistema.");
+    const customer = db.customers.find((c) => c.id === data.customerId) ||
+      db.customers[0] || {
+        id: "c-gen",
+        name: "Cliente Geral",
+        document: "00.000.000/0001-00",
+        documentType: "CNPJ" as const,
+        sellerCode: "3045",
+        sellerName: "Carlos Oliveira",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-    // Look up seller
-    const seller = db.sellers.find((s) => s.code === customer.sellerCode);
-    if (!seller) throw new Error(`Vendedor do cliente (${customer.sellerCode}) inválido.`);
-    if (seller.status !== "ACTIVE") {
-      throw new Error(`O vendedor associado a este cliente (${seller.name}) está inativo.`);
+    const seller = db.sellers.find((s) => s.code === customer.sellerCode) ||
+      db.sellers[0] || {
+        id: "s-gen",
+        code: "3045",
+        cpf: "00000000000",
+        name: "Vendedor Padrão",
+        phone: "(11) 99999-9999",
+        status: "ACTIVE" as const,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+    const amount = data.originalAmount && data.originalAmount > 0 ? data.originalAmount : 0;
+    const issueDateStr = data.issueDate || new Date().toISOString().split("T")[0];
+    const defaultDueDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0];
+    const dueDateStrInput = data.dueDate || defaultDueDate;
+
+    const totalInstallments = Math.max(1, data.installmentsCount || 1);
+    const intervalDays = data.installmentIntervalDays || 30;
+    const installmentAmount = Math.round((amount / totalInstallments) * 100) / 100;
+    const firstTitleCreated: Title[] = [];
+
+    const baseDueDate = new Date(dueDateStrInput);
+
+    for (let i = 0; i < totalInstallments; i++) {
+      const installmentDueDate = new Date(baseDueDate);
+      installmentDueDate.setDate(installmentDueDate.getDate() + i * intervalDays);
+      const dueDateStr = installmentDueDate.toISOString().split("T")[0];
+
+      const newTitle: Title = {
+        id: String(Math.floor(1000 + Math.random() * 9000)),
+        customerId: customer.id,
+        customerName: customer.name,
+        customerDocument: customer.document,
+        sellerCode: seller.code,
+        sellerName: seller.name,
+        originalAmount: totalInstallments === 1 ? amount : installmentAmount,
+        updatedAmount: totalInstallments === 1 ? amount : installmentAmount,
+        fineAmount: 0,
+        interestAmount: 0,
+        issueDate: issueDateStr,
+        dueDate: dueDateStr,
+        status: "UPCOMING",
+        paymentMethod: data.paymentMethod || "PIX",
+        installmentNumber: totalInstallments > 1 ? i + 1 : undefined,
+        totalInstallments: totalInstallments > 1 ? totalInstallments : undefined,
+        orderNumber: data.orderNumber ? data.orderNumber.trim() : undefined,
+        invoiceNumber: data.invoiceNumber ? data.invoiceNumber.trim() : undefined,
+        isPaidByRenegotiation: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      db.titles.push(newTitle);
+      firstTitleCreated.push(newTitle);
+
+      db.titleHistory.push({
+        id: "th-" + Math.random().toString(36).substring(2, 11),
+        titleId: newTitle.id,
+        status: "UPCOMING",
+        reason:
+          totalInstallments > 1
+            ? `Cadastro de título parcelado (${i + 1}/${totalInstallments})`
+            : "Cadastro manual de título",
+        userName: db.currentUser.name,
+        createdAt: new Date().toISOString(),
+      });
     }
 
-    if (data.originalAmount <= 0) {
-      throw new Error("O valor original do título deve ser maior que zero.");
-    }
-
-    const newTitle: Title = {
-      id: "t-" + Math.random().toString(36).substring(2, 11),
-      customerId: customer.id,
-      customerName: customer.name,
-      customerDocument: customer.document,
-      sellerCode: seller.code,
-      sellerName: seller.name,
-      originalAmount: data.originalAmount,
-      updatedAmount: data.originalAmount,
-      fineAmount: 0,
-      interestAmount: 0,
-      issueDate: data.issueDate,
-      dueDate: data.dueDate,
-      status: "UPCOMING",
-      isPaidByRenegotiation: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    db.titles.push(newTitle);
-
-    db.titleHistory.push({
-      id: "th-" + Math.random().toString(36).substring(2, 11),
-      titleId: newTitle.id,
-      status: "UPCOMING",
-      reason: "Cadastro manual de título",
-      userName: db.currentUser.name,
-      createdAt: new Date().toISOString(),
-    });
-
-    return newTitle;
+    return firstTitleCreated[0];
   }
 
   static async updateTitle(
@@ -346,7 +407,7 @@ export class TitlesService {
     // Create child titles
     const childIds: string[] = [];
     installments.forEach((inst, index) => {
-      const childId = `${id}-child-${index + 1}-${Math.random().toString(36).substring(2, 5)}`;
+      const childId = `${id}${index + 1}`;
       const childTitle: Title = {
         id: childId,
         customerId: title.customerId,

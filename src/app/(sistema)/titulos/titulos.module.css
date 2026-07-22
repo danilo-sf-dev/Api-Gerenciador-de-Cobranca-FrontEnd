@@ -7,12 +7,12 @@
 
 .filtersGrid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--space-md);
   align-items: flex-end;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .filtersGrid {
     grid-template-columns: 1fr;
   }
