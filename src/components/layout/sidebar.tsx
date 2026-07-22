@@ -78,7 +78,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               backgroundColor: "var(--colors-primary)",
             }}
           />
-          <span className={styles.logoText}>Trustee Ledger</span>
+          <span className={styles.logoText}>Gestão Finance</span>
         </div>
         <button onClick={onClose} className={styles.closeButton} aria-label="Fechar menu">
           <X size={18} />

@@ -57,13 +57,13 @@ function generateValidCNPJ(): string {
   return digits.join("");
 }
 
-test.describe("Trustee Ledger Billing System E2E Flow", () => {
+test.describe("Gestão Finance Billing System E2E Flow", () => {
   test("should login, create a seller, create a customer, and register a manual title", async ({
     page,
   }) => {
     // 1. Visit Login page
     await page.goto("/login");
-    await expect(page.locator("h2")).toHaveText("Entrar no Trustee Ledger");
+    await expect(page.locator("h2")).toHaveText("Entrar no Gestão Finance");
 
     // Fill credentials
     await page.fill('input[type="email"]', "danilo@empresa.com");

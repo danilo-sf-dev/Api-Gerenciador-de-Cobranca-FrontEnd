@@ -9,6 +9,8 @@ import { CurrencyInput } from "@/components/forms/currency-input";
 import { CustomerSearchSelect } from "@/components/forms/customer-search-select";
 import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function NewTitlePage() {
   const router = useRouter();
@@ -82,6 +84,25 @@ export default function NewTitlePage() {
     <div
       style={{ display: "flex", flexDirection: "column", gap: "var(--space-lg)", maxWidth: 600 }}
     >
+      <div>
+        <Link
+          href={ROUTES.TITLES}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            fontSize: "0.875rem",
+            color: "var(--colors-muted)",
+            textDecoration: "none",
+            cursor: "pointer",
+            marginBottom: 12,
+          }}
+        >
+          <ArrowLeft size={14} />
+          <span>Voltar para Títulos</span>
+        </Link>
+      </div>
+
       <div>
         <h1 style={{ fontWeight: 700 }}>Novo Título</h1>
         <p style={{ color: "var(--colors-muted)", fontSize: "0.875rem", marginTop: 4 }}>

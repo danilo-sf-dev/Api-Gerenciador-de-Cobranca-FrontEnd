@@ -13,16 +13,155 @@ import { formatCPF } from "@/lib/formatters/cpf";
 import { formatCNPJ } from "@/lib/formatters/cnpj";
 import { formatPhone } from "@/lib/formatters/phone";
 import { formatDate } from "@/lib/formatters/date";
-import { Edit2, Plus, Search } from "lucide-react";
+import { Edit2, Plus, Search, XCircle } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
+import { FormField } from "@/components/forms/form-field";
+import { CpfInput } from "@/components/forms/cpf-input";
+import { CnpjInput } from "@/components/forms/cnpj-input";
+import { PhoneInput } from "@/components/forms/phone-input";
+import { SellerSearchSelect } from "@/components/forms/seller-search-select";
+import { validateDocument } from "@/lib/validators/cnpj";
 
 export default function CustomersListPage() {
   const { hasPermission } = usePermissions();
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Modal States
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [name, setName] = useState("");
+  const [documentType, setDocumentType] = useState<"CPF" | "CNPJ">("CPF");
+  const [document, setDocument] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [sellerCode, setSellerCode] = useState("");
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [apiError, setApiError] = useState("");
+
+  const handleDocumentTypeChange = (type: "CPF" | "CNPJ") => {
+    setDocumentType(type);
+    setDocument("");
+    setErrors((prev) => {
+      const copy = { ...prev };
+      delete copy.document;
+      return copy;
+    });
+  };
+
+  const handleOpenCreate = () => {
+    setSelectedCustomer(null);
+    setName("");
+    setDocumentType("CPF");
+    setDocument("");
+    setEmail("");
+    setPhone("");
+    setSellerCode("");
+    setErrors({});
+    setApiError("");
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setName(customer.name);
+    setDocumentType(customer.documentType);
+    setDocument(customer.document);
+    setEmail(customer.email || "");
+    setPhone(customer.phone || "");
+    setSellerCode(customer.sellerCode);
+    setErrors({});
+    setApiError("");
+    setIsModalOpen(true);
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+    setApiError("");
+
+    const newErrors: Record<string, string> = {};
+
+    if (!name.trim()) {
+      newErrors.name = "O nome/razão social é obrigatório.";
+    }
+
+    const cleanDoc = document.replace(/\D/g, "");
+    const expectedLength = documentType === "CPF" ? 11 : 14;
+
+    if (!cleanDoc) {
+      newErrors.document = `O ${documentType} é obrigatório.`;
+    } else if (cleanDoc.length !== expectedLength) {
+      newErrors.document = `O ${documentType} deve conter ${expectedLength} dígitos.`;
+    } else if (!validateDocument(cleanDoc)) {
+      newErrors.document = `${documentType} inválido. Verifique os dígitos.`;
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "E-mail em formato inválido.";
+    }
+
+    const cleanPhone = phone.replace(/\D/g, "");
+    if (cleanPhone && (cleanPhone.length < 10 || cleanPhone.length > 11)) {
+      newErrors.phone = "Telefone deve conter DDD e ter 10 ou 11 dígitos.";
+    }
+
+    if (!sellerCode) {
+      newErrors.sellerCode = "O vendedor associado é obrigatório.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      if (selectedCustomer) {
+        await CustomersService.updateCustomer(selectedCustomer.id, {
+          name,
+          document: cleanDoc,
+          documentType,
+          email: email || undefined,
+          phone: cleanPhone || undefined,
+          sellerCode,
+        });
+      } else {
+        await CustomersService.createCustomer({
+          name,
+          document: cleanDoc,
+          documentType,
+          email: email || undefined,
+          phone: cleanPhone || undefined,
+          sellerCode,
+          sellerName: "",
+        });
+      }
+      setIsModalOpen(false);
+      loadCustomers();
+    } catch (err: any) {
+      setApiError(err.message || "Erro ao salvar cliente.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsModalOpen(false);
+      }
+    };
+    if (isModalOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isModalOpen]);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("name,asc");
   const [page, setPage] = useState(1);
@@ -72,10 +211,13 @@ export default function CustomersListPage() {
         </div>
 
         {hasPermission(PERMISSIONS.CREATE_CUSTOMER) && (
-          <Link href={`${ROUTES.CUSTOMERS}/novo`} className={`${styles.btn} ${styles.btnPrimary}`}>
+          <button
+            onClick={handleOpenCreate}
+            className={`${styles.btn} ${styles.btnPrimary}`}
+          >
             <Plus size={16} />
             <span>Novo Cliente</span>
-          </Link>
+          </button>
         )}
       </div>
 
@@ -175,14 +317,14 @@ export default function CustomersListPage() {
                   <td className={`${styles.td} tabular-nums`}>{formatDate(c.createdAt)}</td>
                   <td className={styles.td} style={{ textAlign: "right" }}>
                     {hasPermission(PERMISSIONS.EDIT_CUSTOMER) && (
-                      <Link
-                        href={`${ROUTES.CUSTOMERS}/${c.id}/editar`}
+                      <button
+                        onClick={() => handleOpenEdit(c)}
                         className={styles.btn}
-                        style={{ padding: 6, backgroundColor: "transparent", border: "none" }}
+                        style={{ padding: 6, backgroundColor: "transparent", border: "none", cursor: "pointer" }}
                         title="Editar Cliente"
                       >
                         <Edit2 size={16} style={{ color: "var(--colors-accent)" }} />
-                      </Link>
+                      </button>
                     )}
                   </td>
                 </tr>
@@ -199,6 +341,166 @@ export default function CustomersListPage() {
           onPageChange={setPage}
         />
       </div>
+
+      {/* Client Create/Edit Modal */}
+      {isModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+          <form
+            onSubmit={handleFormSubmit}
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <span className={styles.modalTitle}>
+                {selectedCustomer ? `Editar Cliente - ${selectedCustomer.name}` : "Cadastrar Novo Cliente"}
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className={styles.modalCloseBtn}
+              >
+                <XCircle size={16} />
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>
+              {apiError && (
+                <div
+                  style={{
+                    padding: "8px 10px",
+                    backgroundColor: "var(--status-late-bg)",
+                    border: "1px solid var(--status-late-text)",
+                    borderRadius: "var(--radius-sm)",
+                    fontSize: "0.8125rem",
+                    color: "var(--status-late-text)",
+                    marginBottom: 12,
+                  }}
+                >
+                  {apiError}
+                </div>
+              )}
+
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Nome / Razão Social *</label>
+                <input
+                  type="text"
+                  className={`${styles.input} ${errors.name ? styles.inputError : ""}`}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Digite o nome completo ou razão social"
+                  required
+                />
+                {errors.name && (
+                  <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                    {errors.name}
+                  </span>
+                )}
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-md)", marginTop: 12 }}>
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>Tipo de Documento</label>
+                  <div style={{ display: "flex", gap: "var(--space-md)", height: 38, alignItems: "center" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.875rem", cursor: "pointer" }}>
+                      <input
+                        type="radio"
+                        name="documentType"
+                        checked={documentType === "CPF"}
+                        onChange={() => handleDocumentTypeChange("CPF")}
+                        style={{ accentColor: "var(--colors-primary)" }}
+                      />
+                      <span>CPF</span>
+                    </label>
+                    <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.875rem", cursor: "pointer" }}>
+                      <input
+                        type="radio"
+                        name="documentType"
+                        checked={documentType === "CNPJ"}
+                        onChange={() => handleDocumentTypeChange("CNPJ")}
+                        style={{ accentColor: "var(--colors-primary)" }}
+                      />
+                      <span>CNPJ</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>Documento ({documentType}) *</label>
+                  {documentType === "CPF" ? (
+                    <CpfInput value={document} onChange={setDocument} error={!!errors.document} />
+                  ) : (
+                    <CnpjInput value={document} onChange={setDocument} error={!!errors.document} />
+                  )}
+                  {errors.document && (
+                    <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                      {errors.document}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-md)", marginTop: 12 }}>
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>E-mail (Opcional)</label>
+                  <input
+                    type="email"
+                    className={`${styles.input} ${errors.email ? styles.inputError : ""}`}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="cliente@exemplo.com"
+                  />
+                  {errors.email && (
+                    <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                      {errors.email}
+                    </span>
+                  )}
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>Telefone (Opcional)</label>
+                  <PhoneInput value={phone} onChange={setPhone} error={!!errors.phone} />
+                  {errors.phone && (
+                    <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                      {errors.phone}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className={styles.inputGroup} style={{ marginTop: 12 }}>
+                <label className={styles.label}>Vendedor Associado *</label>
+                <SellerSearchSelect
+                  value={sellerCode}
+                  onChange={setSellerCode}
+                  error={!!errors.sellerCode}
+                />
+                {errors.sellerCode && (
+                  <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                    {errors.sellerCode}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className={`${styles.btn} ${styles.btnSecondary}`}
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className={`${styles.btn} ${styles.btnPrimary}`}
+              >
+                {saving ? "Salvando..." : "Confirmar"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { AuthProvider } from "@/features/auth/context/auth-context";
 import { LayoutWrapper } from "@/components/layout/layout-wrapper";
 
 export const metadata: Metadata = {
-  title: "Trustee Ledger - Gestão de Cobranças",
+  title: "Gestão Finance - Gestão de Cobranças",
   description: "Sistema de Gestão de Contas a Receber e Cobranças",
 };
 
@@ -14,8 +14,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
-      <body>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <AuthProvider>
           <LayoutWrapper>{children}</LayoutWrapper>
         </AuthProvider>

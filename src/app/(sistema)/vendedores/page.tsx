@@ -11,10 +11,15 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { formatCPF } from "@/lib/formatters/cpf";
 import { formatPhone } from "@/lib/formatters/phone";
-import { Edit2, Plus, Search } from "lucide-react";
+import { Edit2, Plus, Search, XCircle } from "lucide-react";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
+import { ConfirmDialog } from "@/components/feedback/confirm-dialog";
+import { FormField } from "@/components/forms/form-field";
+import { CpfInput } from "@/components/forms/cpf-input";
+import { PhoneInput } from "@/components/forms/phone-input";
+import { validateCPF } from "@/lib/validators/cpf";
 
 export default function SellersListPage() {
   const { hasPermission } = usePermissions();
@@ -29,6 +34,125 @@ export default function SellersListPage() {
 
   // Debounced query state
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Confirmation states
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [targetSeller, setTargetSeller] = useState<{
+    id: string;
+    status: "ACTIVE" | "INACTIVE";
+  } | null>(null);
+
+  // Modal States
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedSeller, setSelectedSeller] = useState<Seller | null>(null);
+  const [name, setName] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [sellerStatus, setSellerStatus] = useState<"ACTIVE" | "INACTIVE">("ACTIVE");
+  const [code, setCode] = useState("");
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [apiError, setApiError] = useState("");
+
+  const handleOpenCreate = () => {
+    setSelectedSeller(null);
+    setName("");
+    setCpf("");
+    setEmail("");
+    setPhone("");
+    setSellerStatus("ACTIVE");
+    setCode("");
+    setErrors({});
+    setApiError("");
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (seller: Seller) => {
+    setSelectedSeller(seller);
+    setName(seller.name);
+    setCpf(seller.cpf);
+    setEmail(seller.email || "");
+    setPhone(seller.phone);
+    setSellerStatus(seller.status);
+    setCode(seller.code);
+    setErrors({});
+    setApiError("");
+    setIsModalOpen(true);
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+    setApiError("");
+
+    const newErrors: Record<string, string> = {};
+
+    if (!name.trim()) newErrors.name = "O nome é obrigatório.";
+
+    const cleanCpf = cpf.replace(/\D/g, "");
+    if (!cleanCpf) {
+      newErrors.cpf = "O CPF é obrigatório.";
+    } else if (cleanCpf.length !== 11 || !validateCPF(cleanCpf)) {
+      newErrors.cpf = "CPF inválido. Verifique os dígitos.";
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = "E-mail em formato inválido.";
+    }
+
+    const cleanPhone = phone.replace(/\D/g, "");
+    if (!cleanPhone) {
+      newErrors.phone = "O celular é obrigatório.";
+    } else if (cleanPhone.length < 10 || cleanPhone.length > 11) {
+      newErrors.phone = "Celular deve conter DDD e ter 10 ou 11 dígitos.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      if (selectedSeller) {
+        await SellersService.updateSeller(selectedSeller.id, {
+          name,
+          cpf: cleanCpf,
+          email: email || undefined,
+          phone: cleanPhone,
+          status: sellerStatus,
+        });
+      } else {
+        await SellersService.createSeller({
+          name,
+          cpf: cleanCpf,
+          email: email || undefined,
+          phone: cleanPhone,
+          status: sellerStatus,
+        });
+      }
+      setIsModalOpen(false);
+      loadSellers();
+    } catch (err: any) {
+      setApiError(err.message || "Erro ao salvar vendedor.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsModalOpen(false);
+      }
+    };
+    if (isModalOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isModalOpen]);
 
   // Debounce search input
   useEffect(() => {
@@ -62,14 +186,23 @@ export default function SellersListPage() {
     loadSellers();
   }, [page, sort, searchQuery]);
 
-  const handleToggleStatus = async (id: string, currentStatus: "ACTIVE" | "INACTIVE") => {
+  const handleToggleStatus = (id: string, currentStatus: "ACTIVE" | "INACTIVE") => {
     if (!hasPermission(PERMISSIONS.INACTIVATE_SELLER)) return;
+    setTargetSeller({ id, status: currentStatus });
+    setConfirmOpen(true);
+  };
+
+  const executeToggleStatus = async () => {
+    if (!targetSeller) return;
     try {
-      const nextStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
-      await SellersService.changeSellerStatus(id, nextStatus);
+      const nextStatus = targetSeller.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+      await SellersService.changeSellerStatus(targetSeller.id, nextStatus);
       loadSellers();
     } catch (err: any) {
       console.error(err.message || "Erro ao alterar status do vendedor.");
+    } finally {
+      setConfirmOpen(false);
+      setTargetSeller(null);
     }
   };
 
@@ -84,10 +217,13 @@ export default function SellersListPage() {
         </div>
 
         {hasPermission(PERMISSIONS.CREATE_SELLER) && (
-          <Link href={`${ROUTES.SELLERS}/novo`} className={`${styles.btn} ${styles.btnPrimary}`}>
+          <button
+            onClick={handleOpenCreate}
+            className={`${styles.btn} ${styles.btnPrimary}`}
+          >
             <Plus size={16} />
             <span>Novo Vendedor</span>
-          </Link>
+          </button>
         )}
       </div>
 
@@ -166,14 +302,14 @@ export default function SellersListPage() {
                   <td className={styles.td} style={{ textAlign: "right" }}>
                     <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
                       {hasPermission(PERMISSIONS.EDIT_SELLER) && (
-                        <Link
-                          href={`${ROUTES.SELLERS}/${s.id}/editar`}
+                        <button
+                          onClick={() => handleOpenEdit(s)}
                           className={styles.btn}
-                          style={{ padding: 6, backgroundColor: "transparent", border: "none" }}
+                          style={{ padding: 6, backgroundColor: "transparent", border: "none", cursor: "pointer" }}
                           title="Editar"
                         >
                           <Edit2 size={16} style={{ color: "var(--colors-accent)" }} />
-                        </Link>
+                        </button>
                       )}
                       {hasPermission(PERMISSIONS.INACTIVATE_SELLER) && (
                         <button
@@ -260,6 +396,167 @@ export default function SellersListPage() {
           onPageChange={setPage}
         />
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        title={targetSeller?.status === "ACTIVE" ? "Inativar Vendedor" : "Ativar Vendedor"}
+        message={
+          targetSeller?.status === "ACTIVE"
+            ? "Tem certeza de que deseja inativar este vendedor? Ele não poderá ser associado a novos clientes ou títulos."
+            : "Tem certeza de que deseja ativar este vendedor?"
+        }
+        confirmLabel={targetSeller?.status === "ACTIVE" ? "Inativar" : "Ativar"}
+        cancelLabel="Cancelar"
+        onConfirm={executeToggleStatus}
+        onCancel={() => {
+          setConfirmOpen(false);
+          setTargetSeller(null);
+        }}
+        isDanger={targetSeller?.status === "ACTIVE"}
+      />
+
+      {/* Seller Create/Edit Modal */}
+      {isModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
+          <form
+            onSubmit={handleFormSubmit}
+            className={styles.modalContent}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.modalHeader}>
+              <span className={styles.modalTitle}>
+                {selectedSeller ? `Editar Vendedor - ${selectedSeller.name}` : "Cadastrar Novo Vendedor"}
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className={styles.modalCloseBtn}
+              >
+                <XCircle size={16} />
+              </button>
+            </div>
+
+            <div className={styles.modalBody}>
+              {apiError && (
+                <div
+                  style={{
+                    padding: "8px 10px",
+                    backgroundColor: "var(--status-late-bg)",
+                    border: "1px solid var(--status-late-text)",
+                    borderRadius: "var(--radius-sm)",
+                    fontSize: "0.8125rem",
+                    color: "var(--status-late-text)",
+                    marginBottom: 12,
+                  }}
+                >
+                  {apiError}
+                </div>
+              )}
+
+              {selectedSeller && (
+                <div className={styles.inputGroup} style={{ marginBottom: 12 }}>
+                  <label className={styles.label}>Código de Vendedor (Somente Leitura)</label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    style={{
+                      backgroundColor: "var(--colors-surface)",
+                      color: "var(--colors-muted)",
+                      fontFamily: "var(--font-mono)",
+                    }}
+                    value={code}
+                    readOnly
+                  />
+                </div>
+              )}
+
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Nome Completo *</label>
+                <input
+                  type="text"
+                  className={`${styles.input} ${errors.name ? styles.inputError : ""}`}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Digite o nome do vendedor"
+                  required
+                />
+                {errors.name && (
+                  <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                    {errors.name}
+                  </span>
+                )}
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-md)", marginTop: 12 }}>
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>CPF *</label>
+                  <CpfInput value={cpf} onChange={setCpf} error={!!errors.cpf} />
+                  {errors.cpf && (
+                    <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                      {errors.cpf}
+                    </span>
+                  )}
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <label className={styles.label}>Celular (com DDD) *</label>
+                  <PhoneInput value={phone} onChange={setPhone} error={!!errors.phone} />
+                  {errors.phone && (
+                    <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                      {errors.phone}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className={styles.inputGroup} style={{ marginTop: 12 }}>
+                <label className={styles.label}>E-mail Corporativo (Opcional)</label>
+                <input
+                  type="email"
+                  className={`${styles.input} ${errors.email ? styles.inputError : ""}`}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="vendedor@empresa.com"
+                />
+                {errors.email && (
+                  <span style={{ fontSize: "0.75rem", color: "var(--status-late-text)", marginTop: 4 }}>
+                    {errors.email}
+                  </span>
+                )}
+              </div>
+
+              <div className={styles.inputGroup} style={{ marginTop: 12 }}>
+                <label className={styles.label}>Status</label>
+                <select
+                  className={styles.input}
+                  value={sellerStatus}
+                  onChange={(e) => setSellerStatus(e.target.value as any)}
+                >
+                  <option value="ACTIVE">Ativo</option>
+                  <option value="INACTIVE">Inativo</option>
+                </select>
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className={`${styles.btn} ${styles.btnSecondary}`}
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className={`${styles.btn} ${styles.btnPrimary}`}
+              >
+                {saving ? "Salvando..." : "Confirmar"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
