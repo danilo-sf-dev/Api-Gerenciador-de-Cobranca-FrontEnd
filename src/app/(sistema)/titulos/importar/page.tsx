@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useMemo } from "react";
 import { TitlesService } from "@/features/titulos/services/titles.service";
 import {
   UploadCloud,
@@ -10,15 +10,24 @@ import {
   ClipboardCheck,
   Play,
   RotateCcw,
+  ChevronDown,
+  ChevronUp,
+  FileText,
 } from "lucide-react";
 import styles from "./importar.module.css";
 import uiStyles from "@/components/ui/ui.module.css";
 import tableStyles from "@/components/data-table/data-table.module.css";
+import { validateCsvFormat, formatFileSize } from "./validate-csv";
 
 type ImportResults = {
   successCount: number;
   failedCount: number;
   rejectedLines: { line: number; content: string; reason: string }[];
+};
+
+type LoadedFile = {
+  name: string;
+  size: number;
 };
 
 export default function ImportTitlesPage() {
@@ -28,6 +37,8 @@ export default function ImportTitlesPage() {
   const [results, setResults] = useState<ImportResults | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
+  const [showManualEditor, setShowManualEditor] = useState(false);
+  const [loadedFile, setLoadedFile] = useState<LoadedFile | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -36,6 +47,9 @@ export default function ImportTitlesPage() {
 456.789.012-34;Roberto de Souza;roberto.souza@gmail.com;(11) 99887-7665;1250,00;2026-08-25;8912;imp-pix-1002
 123.456;Cliente Invalido;erro@email.com;;500,00;2026-09-01;9999;imp-fail-01
 456.789.012-34;Roberto de Souza;roberto.souza@gmail.com;;-150,00;2026-08-25;8912;imp-fail-02`;
+
+  const csvValidation = useMemo(() => validateCsvFormat(csvText), [csvText]);
+  const canProcess = csvText.trim().length > 0 && csvValidation.valid;
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -74,12 +88,14 @@ export default function ImportTitlesPage() {
     reader.onload = (event) => {
       const text = event.target?.result as string;
       setCsvText(text);
+      setLoadedFile({ name: file.name, size: file.size });
+      setResults(null);
     };
     reader.readAsText(file);
   };
 
   const handleProcess = async () => {
-    if (!csvText.trim()) return;
+    if (!canProcess) return;
 
     setLoading(true);
     setError("");
@@ -88,8 +104,10 @@ export default function ImportTitlesPage() {
     try {
       const response = await TitlesService.importTitles(csvText);
       setResults(response);
-    } catch (err: any) {
-      setError(err.message || "Erro ao processar arquivo de importação.");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Erro ao processar arquivo de importação.";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -99,6 +117,8 @@ export default function ImportTitlesPage() {
     setCsvText("");
     setResults(null);
     setError("");
+    setLoadedFile(null);
+    setShowManualEditor(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -114,227 +134,261 @@ export default function ImportTitlesPage() {
     setCsvText(sampleCSV);
     setResults(null);
     setError("");
+    setLoadedFile(null);
+    setShowManualEditor(true);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
+  const handleCsvChange = (value: string) => {
+    setCsvText(value);
+    setResults(null);
+    if (loadedFile) {
+      setLoadedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const formatError =
+    csvText.trim().length > 0 && !csvValidation.valid ? csvValidation.message : "";
+
   return (
-    <div
-      style={{ display: "flex", flexDirection: "column", gap: "var(--space-lg)", maxWidth: 1000 }}
-    >
-      <div>
-        <h1 style={{ fontWeight: 700 }}>Importador de Títulos (CSV)</h1>
-        <p style={{ color: "var(--colors-muted)", fontSize: "0.875rem", marginTop: 4 }}>
-          Simule a importação em lote de faturas e títulos a partir de um arquivo CSV.
-        </p>
+    <div className={styles.page}>
+      <div className={styles.pageHeader}>
+        <h1>Importador de Títulos (CSV)</h1>
+        <p>Importe faturas e títulos em lote a partir de um arquivo CSV.</p>
       </div>
 
-      {error && (
-        <div
-          style={{
-            padding: "10px 12px",
-            backgroundColor: "var(--status-late-bg)",
-            border: "1px solid var(--status-late-text)",
-            borderRadius: "var(--radius-sm)",
-            fontSize: "0.8125rem",
-            color: "var(--status-late-text)",
-          }}
-        >
-          {error}
-        </div>
-      )}
+      {error && <div className={styles.alertError}>{error}</div>}
 
-      {/* Main Grid: Upload & Instructions */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 340px",
-          gap: "var(--space-lg)",
-          alignItems: "start",
-        }}
-      >
-        {/* Left column: input and text area */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
-          {/* File drop zone */}
-          <div
-            className={`${styles.dragDropArea} ${dragActive ? styles.dragDropAreaActive : ""}`}
-            onDragEnter={handleDrag}
-            onDragOver={handleDrag}
-            onDragLeave={handleDrag}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: "none" }}
-              accept=".csv"
-              onChange={handleFileChange}
-            />
-            <UploadCloud size={36} style={{ color: "var(--colors-accent)" }} />
-            <div>
-              <p style={{ fontSize: "0.875rem", fontWeight: 600 }}>
-                Arraste seu arquivo CSV aqui ou clique para selecionar
-              </p>
-              <p style={{ fontSize: "0.75rem", color: "var(--colors-muted)", marginTop: 4 }}>
-                Apenas arquivos .csv codificados em UTF-8 são suportados.
-              </p>
-            </div>
-          </div>
-
-          {/* Pasted text option */}
-          <div className={uiStyles.card}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span className="label">Ou cole o texto CSV abaixo:</span>
-              {csvText && (
-                <button
-                  onClick={handleClear}
-                  className={`${uiStyles.btn} ${uiStyles.btnSecondary}`}
-                  style={{ padding: "4px 8px", fontSize: "0.75rem" }}
-                >
-                  Limpar Editor
-                </button>
+      <div className={styles.mainGrid}>
+        <div className={styles.uploadColumn}>
+          <div className={styles.dropzoneBlock}>
+            <div
+              className={`${styles.dragDropArea} ${dragActive ? styles.dragDropAreaActive : ""} ${loadedFile ? styles.dragDropAreaLoaded : ""}`}
+              onDragEnter={handleDrag}
+              onDragOver={handleDrag}
+              onDragLeave={handleDrag}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  fileInputRef.current?.click();
+                }
+              }}
+            >
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                accept=".csv"
+                onChange={handleFileChange}
+              />
+              {loadedFile ? (
+                <>
+                  <FileText size={28} style={{ color: "var(--status-paid-text)" }} />
+                  <div className={styles.dragDropCopy}>
+                    <p className={styles.loadedFileName}>{loadedFile.name}</p>
+                    <p className={styles.loadedFileMeta}>
+                      {formatFileSize(loadedFile.size)} — clique ou arraste para trocar o arquivo
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <UploadCloud size={28} style={{ color: "var(--colors-accent)" }} />
+                  <div className={styles.dragDropCopy}>
+                    <p className={styles.dragDropTitle}>
+                      Arraste seu arquivo CSV aqui ou clique para selecionar
+                    </p>
+                    <p className={styles.dragDropHint}>
+                      Apenas arquivos .csv. Salve a planilha como CSV antes de enviar.
+                    </p>
+                  </div>
+                </>
               )}
             </div>
-            <textarea
-              className={styles.textarea}
-              placeholder="Cole as linhas separadas por ponto e vírgula..."
-              value={csvText}
-              onChange={(e) => setCsvText(e.target.value)}
-            />
+          </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-sm)" }}>
-              <button
-                type="button"
-                onClick={handleClear}
-                disabled={loading || !csvText}
-                className={`${uiStyles.btn} ${uiStyles.btnSecondary}`}
-              >
-                <RotateCcw size={14} />
-                Limpar Tudo
-              </button>
-              <button
-                type="button"
-                onClick={handleProcess}
-                disabled={loading || !csvText.trim()}
-                className={`${uiStyles.btn} ${uiStyles.btnPrimary}`}
-              >
-                <Play size={14} />
-                {loading ? "Processando..." : "Processar Importação"}
-              </button>
-            </div>
+          <div className={styles.manualBlock}>
+            <button
+              type="button"
+              className={styles.manualToggle}
+              onClick={() => setShowManualEditor((prev) => !prev)}
+              aria-expanded={showManualEditor}
+            >
+              Ou colar CSV manualmente
+              {showManualEditor ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
+
+            {showManualEditor && (
+              <div className={`${uiStyles.card} ${styles.sectionCard} ${styles.manualEditor}`}>
+                <span className="label">Conteúdo CSV</span>
+                <textarea
+                  className={styles.textarea}
+                  placeholder="Cole as linhas separadas por ponto e vírgula..."
+                  value={csvText}
+                  onChange={(e) => handleCsvChange(e.target.value)}
+                />
+
+                {formatError && <div className={styles.alertError}>{formatError}</div>}
+
+                <div className={styles.actionBar}>
+                  <button
+                    type="button"
+                    onClick={handleClear}
+                    disabled={loading || !csvText}
+                    className={`${uiStyles.btn} ${uiStyles.btnSecondary} ${styles.btnAction}`}
+                  >
+                    <RotateCcw size={14} />
+                    Limpar Tudo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleProcess}
+                    disabled={loading || !canProcess}
+                    className={`${uiStyles.btn} ${uiStyles.btnPrimary} ${styles.btnAction}`}
+                    title={
+                      formatError
+                        ? formatError
+                        : !csvText.trim()
+                          ? "Informe um CSV válido para processar"
+                          : undefined
+                    }
+                  >
+                    <Play size={14} />
+                    {loading ? "Processando..." : "Processar Importação"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!showManualEditor && csvText.trim().length > 0 && (
+              <div className={`${uiStyles.card} ${styles.sectionCard}`}>
+                {formatError && <div className={styles.alertError}>{formatError}</div>}
+                <div className={styles.actionBar}>
+                  <button
+                    type="button"
+                    onClick={handleClear}
+                    disabled={loading}
+                    className={`${uiStyles.btn} ${uiStyles.btnSecondary} ${styles.btnAction}`}
+                  >
+                    <RotateCcw size={14} />
+                    Limpar Tudo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleProcess}
+                    disabled={loading || !canProcess}
+                    className={`${uiStyles.btn} ${uiStyles.btnPrimary} ${styles.btnAction}`}
+                    title={formatError || undefined}
+                  >
+                    <Play size={14} />
+                    {loading ? "Processando..." : "Processar Importação"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Right column: Formatting guide & sample template */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
-          <div className={uiStyles.card}>
-            <h3 style={{ fontSize: "0.9375rem", fontWeight: 600 }}>Guia do Formato</h3>
-            <p style={{ fontSize: "0.8125rem", color: "var(--colors-muted)", lineHeight: 1.4 }}>
-              O CSV deve ser separado por <strong>ponto e vírgula (;)</strong> com as colunas na
-              ordem abaixo:
-            </p>
-            <ol
-              style={{
-                fontSize: "0.8125rem",
-                color: "var(--colors-ink)",
-                paddingLeft: "20px",
-                lineHeight: 1.6,
-              }}
-            >
-              <li>CPF / CNPJ do Cliente</li>
-              <li>Nome do Cliente</li>
-              <li>E-mail</li>
-              <li>Celular</li>
-              <li>Valor do Título (Decimal com vírgula)</li>
-              <li>Vencimento (AAAA-MM-DD)</li>
-              <li>Código do Vendedor</li>
-              <li>ID Único (opcional)</li>
-            </ol>
-          </div>
+        <div className={`${uiStyles.card} ${styles.sectionCard} ${styles.guideCard}`}>
+          <h3 className={styles.guideTitle}>Guia do Formato</h3>
+          <p className={styles.guideIntro}>
+            O CSV deve ser separado por <strong>ponto e vírgula (;)</strong> com as colunas na ordem
+            abaixo:
+          </p>
+          <ol className={styles.guideList}>
+            <li>CPF / CNPJ do Cliente</li>
+            <li>Nome do Cliente</li>
+            <li>E-mail</li>
+            <li>Celular</li>
+            <li>Valor do Título (decimal com vírgula)</li>
+            <li>Vencimento (AAAA-MM-DD)</li>
+            <li>Código do Vendedor</li>
+            <li>ID Único (opcional)</li>
+          </ol>
+        </div>
 
-          <div className={uiStyles.card} style={{ position: "relative" }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 4,
-              }}
-            >
-              <span className="label">Exemplo de CSV</span>
-              <div style={{ display: "flex", gap: 4 }}>
-                <button
-                  onClick={handleFillSample}
-                  className={`${uiStyles.btn} ${uiStyles.btnSecondary}`}
-                  style={{ padding: "2px 6px", fontSize: "0.75rem" }}
-                  title="Copiar dados de exemplo para o editor"
-                >
-                  Preencher
-                </button>
-                <button
-                  onClick={handleCopyTemplate}
-                  className={`${uiStyles.btn} ${uiStyles.btnSecondary}`}
-                  style={{ padding: "2px 6px", fontSize: "0.75rem" }}
-                  title="Copiar exemplo para área de transferência"
-                >
-                  {copied ? (
-                    <ClipboardCheck size={12} style={{ color: "var(--status-paid-text)" }} />
-                  ) : (
-                    <ClipboardCopy size={12} />
-                  )}
-                </button>
-              </div>
+        <div className={`${uiStyles.card} ${styles.sectionCard} ${styles.exampleCard}`}>
+          <div className={styles.sampleHeader}>
+            <span className="label">Exemplo de CSV</span>
+            <div className={styles.sampleHeaderActions}>
+              <button
+                type="button"
+                onClick={handleFillSample}
+                className={`${uiStyles.btn} ${uiStyles.btnSecondary} ${styles.btnCompact}`}
+                title="Preencher editor com exemplo — substitui o conteúdo pelo CSV abaixo"
+              >
+                Usar exemplo
+              </button>
+              <button
+                type="button"
+                onClick={handleCopyTemplate}
+                className={`${uiStyles.btn} ${uiStyles.btnSecondary} ${styles.btnIconOnly}`}
+                title="Copiar exemplo para a área de transferência"
+                aria-label="Copiar template CSV"
+              >
+                {copied ? (
+                  <ClipboardCheck size={16} style={{ color: "var(--status-paid-text)" }} />
+                ) : (
+                  <ClipboardCopy size={16} />
+                )}
+              </button>
             </div>
+          </div>
+          <div className={styles.templateScroll}>
             <pre className={styles.templateBox}>{sampleCSV}</pre>
           </div>
         </div>
       </div>
 
-      {/* Processing Results Section */}
       {results && (
-        <div className={uiStyles.card} style={{ marginTop: "var(--space-md)" }}>
-          <h2 style={{ fontSize: "1.25rem", fontWeight: 600 }}>Resultado do Processamento</h2>
+        <div className={`${uiStyles.card} ${styles.sectionCard}`}>
+          <h2 className={styles.resultsTitle}>Resultado do Processamento</h2>
 
           <div className={styles.resultsGrid}>
             <div className={`${styles.summaryCard} ${styles.summaryCardSuccess}`}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div className={styles.summaryCardHeader}>
                 <CheckCircle2 size={18} style={{ color: "var(--status-paid-text)" }} />
                 <span className={styles.summaryCardSuccessTitle}>Títulos Importados</span>
               </div>
               <span className={`${styles.summaryCardSuccessValue} tabular-nums`}>
                 {results.successCount}
               </span>
-              <p style={{ fontSize: "0.75rem", color: "var(--status-paid-text)" }}>
+              <p className={`${styles.summaryCardNote} ${styles.summaryCardNoteSuccess}`}>
                 Títulos gravados com sucesso no banco de dados.
               </p>
             </div>
 
             <div className={`${styles.summaryCard} ${styles.summaryCardFailed}`}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div className={styles.summaryCardHeader}>
                 <AlertOctagon size={18} style={{ color: "var(--status-late-text)" }} />
                 <span className={styles.summaryCardFailedTitle}>Linhas Rejeitadas</span>
               </div>
               <span className={`${styles.summaryCardFailedValue} tabular-nums`}>
                 {results.failedCount}
               </span>
-              <p style={{ fontSize: "0.75rem", color: "var(--status-late-text)" }}>
+              <p className={`${styles.summaryCardNote} ${styles.summaryCardNoteFailed}`}>
                 Linhas descartadas por erros de validação.
               </p>
             </div>
           </div>
 
-          {/* Rejected Rows Table */}
           {results.failedCount > 0 && (
-            <div style={{ marginTop: "var(--space-lg)" }}>
-              <div style={{ marginBottom: "var(--space-sm)" }}>
-                <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--status-late-text)" }}>
-                  Detalhes das Rejeições
-                </h3>
-                <p style={{ fontSize: "0.8125rem", color: "var(--colors-muted)", marginTop: 4 }}>
-                  Corrija os dados das linhas abaixo e reenvie no importador:
-                </p>
-              </div>
+            <div className={styles.rejectionsSection}>
+              <h3 className={styles.rejectionsHeading}>Detalhes das Rejeições</h3>
+              <p className={styles.rejectionsIntro}>
+                Corrija os dados das linhas abaixo e reenvie no importador:
+              </p>
 
-              <div className={tableStyles.tableWrapper}>
+              <div className={`${tableStyles.tableWrapper} ${styles.rejectionsTableWrapper}`}>
                 <table className={tableStyles.table}>
                   <thead className={tableStyles.thead}>
                     <tr>
@@ -348,22 +402,10 @@ export default function ImportTitlesPage() {
                   <tbody>
                     {results.rejectedLines.map((rej, idx) => (
                       <tr key={idx} className={`${tableStyles.tr} ${styles.rejectedRow}`}>
-                        <td
-                          className={`${tableStyles.td} tabular-nums`}
-                          style={{ textAlign: "center", fontWeight: 600 }}
-                        >
+                        <td className={`${tableStyles.td} tabular-nums ${styles.cellLine}`}>
                           {rej.line}
                         </td>
-                        <td
-                          className={tableStyles.td}
-                          style={{
-                            fontFamily: "var(--font-mono)",
-                            fontSize: "0.75rem",
-                            wordBreak: "break-all",
-                          }}
-                        >
-                          {rej.content}
-                        </td>
+                        <td className={`${tableStyles.td} ${styles.cellContent}`}>{rej.content}</td>
                         <td className={`${tableStyles.td} ${styles.cellReason}`}>{rej.reason}</td>
                       </tr>
                     ))}
