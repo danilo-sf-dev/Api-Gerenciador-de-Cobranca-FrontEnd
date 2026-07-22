@@ -146,14 +146,14 @@ src/
 │   │   ├── redefinir-senha/[token]/
 │   │   └── ativar-conta/[token]/
 │   ├── (sistema)/              # Rotas protegidas (sistema principal)
-│   │   ├── cargos/             # CRUD de cargos
-│   │   ├── clientes/           # CRUD de clientes
+│   │   ├── cargos/             # CRUD de cargos (modal inline)
+│   │   ├── clientes/           # CRUD de clientes (modal inline)
+│   │   ├── sem-permissao/      # Tela de erro 403 (Acesso Negado)
 │   │   ├── titulos/            # Módulo completo de títulos e cobranças
-│   │   │   ├── [id]/           # Detalhes, edição e renegociação
-│   │   │   ├── importar/       # Importação em lote
-│   │   │   └── novo/           # Criação de título
-│   │   ├── usuarios/           # Gestão de usuários e convites
-│   │   └── vendedores/         # CRUD de vendedores
+│   │   │   ├── [id]/           # Detalhes, edição (modal) e renegociação
+│   │   │   └── importar/       # Importação em lote
+│   │   ├── usuarios/           # Gestão de usuários, convites e status
+│   │   └── vendedores/         # CRUD de vendedores (modal inline)
 │   ├── globals.css             # Tokens de design global (CSS variables)
 │   ├── layout.tsx              # Layout raiz da aplicação
 │   └── page.tsx                # Dashboard operacional
@@ -178,6 +178,7 @@ src/
 │   └── use-permissions.ts      # Hook de verificação de permissões do usuário
 │
 ├── lib/
+│   ├── api/                    # Cliente HTTP centralizado (client.ts) e mock adapter
 │   ├── constants/              # Permissões e rotas da aplicação
 │   ├── formatters/             # Formatadores (CPF, CNPJ, moeda, data, telefone)
 │   ├── permissions/            # Motor de regras de permissão por cargo
