@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { PlusCircle, UserPlus, FileSpreadsheet } from "lucide-react";
+import { PlusCircle, FileSpreadsheet } from "lucide-react";
 import { ROUTES } from "@/lib/constants/routes";
 import uiStyles from "@/components/ui/ui.module.css";
 
@@ -23,19 +23,6 @@ export function QuickActionsCard() {
         >
           <PlusCircle size={16} style={{ color: "var(--colors-primary)" }} />
           <span>Novo Título</span>
-        </Link>
-        <Link
-          href={`${ROUTES.CUSTOMERS}/novo`}
-          className={uiStyles.btn}
-          style={{
-            justifyContent: "flex-start",
-            backgroundColor: "var(--colors-surface)",
-            color: "var(--colors-ink)",
-            border: "1px solid var(--colors-border)",
-          }}
-        >
-          <UserPlus size={16} style={{ color: "var(--colors-primary)" }} />
-          <span>Novo Cliente</span>
         </Link>
         <Link
           href={`${ROUTES.TITLES}/importar`}
