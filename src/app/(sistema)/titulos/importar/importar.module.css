@@ -1,3 +1,103 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  width: 100%;
+  max-width: 1000px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.pageHeader h1 {
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+.pageHeader p {
+  color: var(--colors-muted);
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+.alertError {
+  padding: 10px 12px;
+  background-color: var(--status-late-bg);
+  border: 1px solid var(--status-late-text);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  color: var(--status-late-text);
+}
+
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  grid-template-areas:
+    "drop guide"
+    "manual guide"
+    "manual example";
+  gap: var(--space-lg);
+  align-items: start;
+  width: 100%;
+  min-width: 0;
+}
+
+.uploadColumn {
+  display: contents;
+}
+
+.dropzoneBlock {
+  grid-area: drop;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.manualBlock {
+  grid-area: manual;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.guideCard {
+  grid-area: guide;
+  min-width: 0;
+}
+
+.exampleCard {
+  grid-area: example;
+  min-width: 0;
+}
+
+.sectionCard {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 900px) {
+  .mainGrid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "drop"
+      "guide"
+      "manual"
+      "example";
+  }
+}
+
+@media (max-width: 768px) {
+  .sectionCard {
+    padding: var(--space-md);
+    gap: var(--space-sm);
+  }
+
+  .page {
+    gap: var(--space-md);
+  }
+}
+
 .dragDropArea {
   border: 2px dashed var(--colors-border);
   border-radius: var(--radius-md);
@@ -14,6 +114,10 @@
   justify-content: center;
   gap: var(--space-sm);
   color: var(--colors-ink);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .dragDropArea:hover {
@@ -26,8 +130,82 @@
   background-color: var(--colors-primary-light);
 }
 
-.textarea {
+.dragDropAreaLoaded {
+  border-style: solid;
+  border-color: var(--status-paid-text);
+  background-color: var(--status-paid-bg);
+}
+
+.dragDropTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-wrap: pretty;
+}
+
+.dragDropHint {
+  font-size: 0.75rem;
+  color: var(--colors-muted);
+  margin-top: 4px;
+  text-wrap: pretty;
+}
+
+.dragDropCopy {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.loadedFileName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--status-paid-text);
+  overflow-wrap: anywhere;
+}
+
+.loadedFileMeta {
+  font-size: 0.75rem;
+  color: var(--colors-muted);
+}
+
+.manualToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  min-height: 44px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--colors-ink);
+  background-color: var(--colors-surface);
+  border: 1px solid var(--colors-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+.manualToggle:hover {
+  background-color: var(--colors-border);
+}
+
+.manualToggle:focus-visible {
+  outline: 2px solid var(--colors-accent);
+  outline-offset: 2px;
+}
+
+.manualEditor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 150px;
   padding: 12px;
   font-family: var(--font-mono);
@@ -37,6 +215,18 @@
   background-color: var(--colors-bg);
   color: var(--colors-ink);
   resize: vertical;
+  box-sizing: border-box;
+  overflow-x: auto;
+  white-space: pre;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+@media (max-width: 768px) {
+  .textarea {
+    resize: none;
+    font-size: 0.75rem;
+  }
 }
 
 .textarea:focus {
@@ -44,17 +234,112 @@
   outline: none;
 }
 
-.templateBox {
-  background-color: var(--colors-surface);
+.actionBar {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .actionBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actionBar .btnAction {
+    width: 100%;
+  }
+}
+
+.btnAction {
+  min-height: 44px;
+  padding: 8px 16px;
+}
+
+.sampleHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.sampleHeaderActions {
+  display: flex;
+  gap: var(--space-xs);
+  width: 100%;
+}
+
+.sampleHeaderActions .btnCompact {
+  flex: 1;
+  min-width: 0;
+}
+
+.btnCompact {
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 0.75rem;
+}
+
+.btnIconOnly {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
+}
+
+.guideList {
+  font-size: 0.8125rem;
+  color: var(--colors-ink);
+  padding-left: 20px;
+  line-height: 1.6;
+}
+
+.guideIntro {
+  font-size: 0.8125rem;
+  color: var(--colors-muted);
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+@media (max-width: 768px) {
+  .dragDropArea {
+    padding: var(--space-lg) var(--space-md);
+  }
+}
+
+.guideTitle {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.templateScroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--colors-border);
   border-radius: var(--radius-sm);
+  background-color: var(--colors-surface);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.templateBox {
+  margin: 0;
   padding: var(--space-md);
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  white-space: pre-wrap;
-  word-break: break-all;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  white-space: pre;
   color: var(--colors-ink);
-  position: relative;
+  min-width: min-content;
+}
+
+@media (max-width: 320px) {
+  .templateBox {
+    font-size: 0.6875rem;
+    padding: var(--space-sm);
+  }
 }
 
 .resultsGrid {
@@ -62,6 +347,12 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--space-md);
   margin-top: var(--space-lg);
+}
+
+@media (max-width: 640px) {
+  .resultsGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .summaryCard {
@@ -92,6 +383,13 @@
   font-weight: 700;
 }
 
+@media (max-width: 640px) {
+  .summaryCardSuccessValue,
+  .summaryCardFailedValue {
+    font-size: 1.5rem;
+  }
+}
+
 .summaryCardFailed {
   border-color: var(--status-late-text);
   background-color: var(--status-late-bg);
@@ -111,22 +409,55 @@
   font-weight: 700;
 }
 
-.copyButton {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background-color: var(--colors-bg);
-  border: 1px solid var(--colors-border);
-  border-radius: var(--radius-sm);
-  padding: 4px 8px;
-  font-size: 0.75rem;
-  cursor: pointer;
-  font-weight: 500;
-  color: var(--colors-ink);
+.summaryCardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
 }
 
-.copyButton:hover {
-  background-color: var(--colors-surface);
+.summaryCardNote {
+  font-size: 0.75rem;
+}
+
+.summaryCardNoteSuccess {
+  color: var(--status-paid-text);
+}
+
+.summaryCardNoteFailed {
+  color: var(--status-late-text);
+}
+
+.resultsTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.rejectionsSection {
+  margin-top: var(--space-lg);
+}
+
+.rejectionsHeading {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--status-late-text);
+}
+
+.rejectionsIntro {
+  font-size: 0.8125rem;
+  color: var(--colors-muted);
+  margin-top: 4px;
+  margin-bottom: var(--space-sm);
+}
+
+.rejectionsTableWrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.rejectionsTableWrapper table {
+  min-width: 480px;
 }
 
 .rejectedRow {
@@ -140,4 +471,15 @@
 .cellReason {
   color: var(--status-late-text);
   font-weight: 500;
+}
+
+.cellContent {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  word-break: break-all;
+}
+
+.cellLine {
+  text-align: center;
+  font-weight: 600;
 }
