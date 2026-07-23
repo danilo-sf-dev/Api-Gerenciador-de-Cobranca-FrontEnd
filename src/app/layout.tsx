@@ -6,6 +6,9 @@ import { LayoutWrapper } from "@/components/layout/layout-wrapper";
 export const metadata: Metadata = {
   title: "Gestão Finance - Gestão de Cobranças",
   description: "Sistema de Gestão de Contas a Receber e Cobranças",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
