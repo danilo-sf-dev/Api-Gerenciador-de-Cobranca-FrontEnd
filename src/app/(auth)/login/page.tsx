@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   const { login, changeRole } = useAuth();
@@ -150,14 +151,14 @@ export default function LoginPage() {
             />
           </div>
 
-          <button
+          <Button
             type="submit"
-            disabled={loading}
-            className={`${styles.btn} ${styles.btnPrimary}`}
+            loading={loading}
+            variant="primary"
             style={{ width: "100%", height: 40 }}
           >
-            {loading ? "Entrando..." : "Entrar"}
-          </button>
+            Entrar
+          </Button>
         </form>
 
         <div
@@ -182,15 +183,15 @@ export default function LoginPage() {
           <hr style={{ flex: 1, border: "none", borderTop: "1px solid var(--colors-border)" }} />
         </div>
 
-        <button
+        <Button
           type="button"
           onClick={handleGoogleLogin}
-          disabled={loading}
-          className={`${styles.btn} ${styles.btnSecondary}`}
+          loading={loading}
+          variant="secondary"
           style={{ width: "100%", height: 40 }}
         >
           Entrar com Google
-        </button>
+        </Button>
 
         <div
           style={{
@@ -214,9 +215,12 @@ export default function LoginPage() {
             Simulador de Testes
           </span>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-            <button
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
               onClick={() => handleTestLoginResponse("pending")}
-              className={styles.btn}
+              disabled={loading}
               style={{
                 fontSize: "0.6875rem",
                 padding: "4px 8px",
@@ -224,10 +228,13 @@ export default function LoginPage() {
               }}
             >
               Erro: Convite Pendente
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
               onClick={() => handleTestLoginResponse("incorrect")}
-              className={styles.btn}
+              disabled={loading}
               style={{
                 fontSize: "0.6875rem",
                 padding: "4px 8px",
@@ -235,10 +242,13 @@ export default function LoginPage() {
               }}
             >
               Erro: Senha Incorreta
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
               onClick={() => handleTestLoginResponse("notfound")}
-              className={styles.btn}
+              disabled={loading}
               style={{
                 fontSize: "0.6875rem",
                 padding: "4px 8px",
@@ -246,7 +256,7 @@ export default function LoginPage() {
               }}
             >
               Erro: Conta Inexistente
-            </button>
+            </Button>
           </div>
         </div>
       </div>

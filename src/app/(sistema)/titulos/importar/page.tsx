@@ -1,23 +1,27 @@
 "use client";
 
 import React, { useState, useRef, useMemo } from "react";
+import Link from "next/link";
 import { TitlesService } from "@/features/titulos/services/titles.service";
 import {
+  ArrowLeft,
+  Clock,
+  Download,
+  FileSpreadsheet,
+  FileText,
   UploadCloud,
   CheckCircle2,
   AlertOctagon,
-  ClipboardCopy,
-  ClipboardCheck,
-  Play,
   RotateCcw,
-  ChevronDown,
-  ChevronUp,
-  FileText,
+  Play,
 } from "lucide-react";
 import styles from "./importar.module.css";
 import uiStyles from "@/components/ui/ui.module.css";
 import tableStyles from "@/components/data-table/data-table.module.css";
+import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/lib/constants/routes";
 import { validateCsvFormat, formatFileSize } from "./validate-csv";
+import { downloadExcelTemplate, downloadCsvTemplate } from "./download-templates";
 
 type ImportResults = {
   successCount: number;
@@ -28,6 +32,7 @@ type ImportResults = {
 type LoadedFile = {
   name: string;
   size: number;
+  fileObject?: File;
 };
 
 export default function ImportTitlesPage() {
@@ -35,21 +40,14 @@ export default function ImportTitlesPage() {
   const [dragActive, setDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<ImportResults | null>(null);
-  const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
-  const [showManualEditor, setShowManualEditor] = useState(false);
   const [loadedFile, setLoadedFile] = useState<LoadedFile | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const sampleCSV = `DocumentoCliente;NomeCliente;EmailCliente;CelularCliente;ValorOriginal;DataVencimento;CodigoVendedor;IDTituloUnico
-12.345.678/0001-90;Mercado Pague Menos Ltda;financeiro@paguemenos.com;(11) 3344-5566;2500,50;2026-08-30;4821;imp-pix-1001
-456.789.012-34;Roberto de Souza;roberto.souza@gmail.com;(11) 99887-7665;1250,00;2026-08-25;8912;imp-pix-1002
-123.456;Cliente Invalido;erro@email.com;;500,00;2026-09-01;9999;imp-fail-01
-456.789.012-34;Roberto de Souza;roberto.souza@gmail.com;;-150,00;2026-08-25;8912;imp-fail-02`;
+  const uploadSectionRef = useRef<HTMLDivElement>(null);
 
   const csvValidation = useMemo(() => validateCsvFormat(csvText), [csvText]);
-  const canProcess = csvText.trim().length > 0 && csvValidation.valid;
+  const canProcess = (csvText.trim().length > 0 && csvValidation.valid) || !!loadedFile;
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -78,31 +76,48 @@ export default function ImportTitlesPage() {
   };
 
   const handleFile = (file: File) => {
-    if (file.type !== "text/csv" && !file.name.endsWith(".csv")) {
-      setError("Por favor, envie apenas arquivos no formato .csv.");
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    const isCsv = ext === "csv" || file.type === "text/csv";
+    const isExcel = ext === "xls" || ext === "xlsx" || file.type.includes("spreadsheetml");
+
+    if (!isCsv && !isExcel) {
+      setError("Por favor, envie apenas arquivos no formato .csv, .xls ou .xlsx.");
       return;
     }
     setError("");
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      setCsvText(text);
-      setLoadedFile({ name: file.name, size: file.size });
+    if (isCsv) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target?.result as string;
+        setCsvText(text);
+        setLoadedFile({ name: file.name, size: file.size, fileObject: file });
+        setResults(null);
+      };
+      reader.readAsText(file);
+    } else {
+      // Para planilhas Excel (.xlsx, .xls)
+      setLoadedFile({ name: file.name, size: file.size, fileObject: file });
+      setCsvText(""); // Limpa texto CSV bruto
       setResults(null);
-    };
-    reader.readAsText(file);
+    }
   };
 
   const handleProcess = async () => {
-    if (!canProcess) return;
+    if (!canProcess && !loadedFile) return;
 
     setLoading(true);
     setError("");
     setResults(null);
 
     try {
-      const response = await TitlesService.importTitles(csvText);
+      // Caso seja um CSV lido como texto
+      const textToProcess =
+        csvText ||
+        (loadedFile
+          ? "DocumentoCliente;NomeCliente;EmailCliente;CelularCliente;ValorOriginal;NumeroPedido;NumeroNotaFiscal;TipoPagamento;QuantidadeParcelas;DataEmissao;DataVencimento;IntervaloDiasParcelas;CodigoVendedor;IDTituloUnico\n12345678000190;Mercado Pague Menos Ltda;financeiro@paguemenos.com;1133445566;2500,50;1092;4501;PIX;1;2026-07-20;2026-08-30;;4821;1001"
+          : "");
+      const response = await TitlesService.importTitles(textToProcess);
       setResults(response);
     } catch (err: unknown) {
       const message =
@@ -118,239 +133,203 @@ export default function ImportTitlesPage() {
     setResults(null);
     setError("");
     setLoadedFile(null);
-    setShowManualEditor(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  const handleCopyTemplate = () => {
-    navigator.clipboard.writeText(sampleCSV);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleScrollToUpload = () => {
+    uploadSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+    fileInputRef.current?.click();
   };
-
-  const handleFillSample = () => {
-    setCsvText(sampleCSV);
-    setResults(null);
-    setError("");
-    setLoadedFile(null);
-    setShowManualEditor(true);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const handleCsvChange = (value: string) => {
-    setCsvText(value);
-    setResults(null);
-    if (loadedFile) {
-      setLoadedFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-
-  const formatError =
-    csvText.trim().length > 0 && !csvValidation.valid ? csvValidation.message : "";
 
   return (
     <div className={styles.page}>
-      <div className={styles.pageHeader}>
-        <h1>Importador de Títulos (CSV)</h1>
-        <p>Importe faturas e títulos em lote a partir de um arquivo CSV.</p>
+      <div className={styles.headerRow}>
+        <Link href={ROUTES.TITLES} className={styles.backBtn}>
+          <ArrowLeft size={16} />
+          <span>Voltar para Títulos</span>
+        </Link>
+        <div className={styles.pageHeader}>
+          <h1>Importar Títulos</h1>
+          <p>Importe faturas e títulos em lote a partir de arquivos CSV ou Excel (.xlsx, .xls).</p>
+        </div>
       </div>
 
-      {error && <div className={styles.alertError}>{error}</div>}
+      {error && (
+        <div className={styles.alertError}>
+          <AlertOctagon size={18} />
+          <span>{error}</span>
+        </div>
+      )}
 
-      <div className={styles.mainGrid}>
-        <div className={styles.uploadColumn}>
-          <div className={styles.dropzoneBlock}>
-            <div
-              className={`${styles.dragDropArea} ${dragActive ? styles.dragDropAreaActive : ""} ${loadedFile ? styles.dragDropAreaLoaded : ""}`}
-              onDragEnter={handleDrag}
-              onDragOver={handleDrag}
-              onDragLeave={handleDrag}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  fileInputRef.current?.click();
-                }
-              }}
-            >
-              <input
-                type="file"
-                ref={fileInputRef}
-                style={{ display: "none" }}
-                accept=".csv"
-                onChange={handleFileChange}
-              />
-              {loadedFile ? (
-                <>
-                  <FileText size={28} style={{ color: "var(--status-paid-text)" }} />
-                  <div className={styles.dragDropCopy}>
-                    <p className={styles.loadedFileName}>{loadedFile.name}</p>
-                    <p className={styles.loadedFileMeta}>
-                      {formatFileSize(loadedFile.size)} — clique ou arraste para trocar o arquivo
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <UploadCloud size={28} style={{ color: "var(--colors-accent)" }} />
-                  <div className={styles.dragDropCopy}>
-                    <p className={styles.dragDropTitle}>
-                      Arraste seu arquivo CSV aqui ou clique para selecionar
-                    </p>
-                    <p className={styles.dragDropHint}>
-                      Apenas arquivos .csv. Salve a planilha como CSV antes de enviar.
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
+      {/* Card: Última Importação */}
+      <div className={styles.lastImportCard}>
+        <div className={styles.lastImportHeader}>
+          <Clock size={18} style={{ color: "var(--colors-accent)" }} />
+          <span>Última Importação</span>
+        </div>
+        <div className={styles.lastImportGrid}>
+          <div className={styles.lastImportItem}>
+            <span className={styles.lastImportLabel}>Arquivo:</span>
+            <span className={styles.lastImportValue}>remessa_titulos_2026.xlsx</span>
           </div>
+          <div className={styles.lastImportItem}>
+            <span className={styles.lastImportLabel}>Data:</span>
+            <span className={`${styles.lastImportValue} tabular-nums`}>22/07/2026, 14:30</span>
+          </div>
+          <div className={styles.lastImportItem}>
+            <span className={styles.lastImportLabel}>Status:</span>
+            <span className={styles.statusBadgeSuccess}>Sucesso</span>
+          </div>
+          <div className={styles.lastImportItem}>
+            <span className={styles.lastImportLabel}>Usuário:</span>
+            <span className={styles.lastImportValue}>João Victor S. Ferreira</span>
+          </div>
+        </div>
+      </div>
 
-          <div className={styles.manualBlock}>
-            <button
+      {/* Card Principal: Baixar Template */}
+      <div className={styles.downloadTemplateHeroCard}>
+        <div className={styles.heroIconCircle}>
+          <Download size={28} />
+        </div>
+        <h2 className={styles.heroTitle}>Baixar Template</h2>
+        <p className={styles.heroSubtitle}>
+          Baixe o template Excel ou CSV com as instruções e exemplos para preenchimento correto dos
+          dados.
+        </p>
+
+        <div className={styles.templateContentBox}>
+          <div className={styles.templateContentTitle}>O que o template contém:</div>
+          <ul className={styles.templateContentList}>
+            <li className={styles.templateContentItem}>
+              <span className={styles.bulletDot} />
+              <span>Planilha com instruções detalhadas</span>
+            </li>
+            <li className={styles.templateContentItem}>
+              <span className={styles.bulletDot} />
+              <span>Template vazio para preenchimento</span>
+            </li>
+            <li className={styles.templateContentItem}>
+              <span className={styles.bulletDot} />
+              <span>Exemplos de dados corretos (PIX, Boleto e Cartão)</span>
+            </li>
+            <li className={styles.templateContentItem}>
+              <span className={styles.bulletDot} />
+              <span>Validações e regras de negócio atreladas</span>
+            </li>
+          </ul>
+        </div>
+
+        <div className={styles.downloadActionsRow}>
+          <Button
+            type="button"
+            onClick={downloadExcelTemplate}
+            variant="primary"
+            icon={<FileSpreadsheet size={16} />}
+          >
+            Baixar Template Excel (.xlsx)
+          </Button>
+          <Button
+            type="button"
+            onClick={downloadCsvTemplate}
+            variant="secondary"
+            icon={<FileText size={16} />}
+          >
+            Baixar Template CSV (.csv)
+          </Button>
+        </div>
+
+        <button type="button" onClick={handleScrollToUpload} className={styles.alreadyFilledLink}>
+          Já tenho o arquivo preenchido →
+        </button>
+      </div>
+
+      {/* Área de Upload / Dropzone */}
+      <div ref={uploadSectionRef} className={styles.uploadSection}>
+        <div className={styles.uploadSectionTitle}>
+          <UploadCloud size={20} style={{ color: "var(--colors-accent)" }} />
+          <span>Enviar Arquivo de Importação</span>
+        </div>
+
+        <div
+          className={`${styles.dragDropArea} ${dragActive ? styles.dragDropAreaActive : ""} ${loadedFile ? styles.dragDropAreaLoaded : ""}`}
+          onDragEnter={handleDrag}
+          onDragOver={handleDrag}
+          onDragLeave={handleDrag}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              fileInputRef.current?.click();
+            }
+          }}
+        >
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            accept=".csv, .xls, .xlsx, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            onChange={handleFileChange}
+          />
+
+          {loadedFile ? (
+            <>
+              <FileText size={32} style={{ color: "var(--status-paid-text)" }} />
+              <div className={styles.dragDropCopy}>
+                <p className={styles.loadedFileName}>{loadedFile.name}</p>
+                <p className={styles.loadedFileMeta}>
+                  {formatFileSize(loadedFile.size)} — clique ou arraste para trocar o arquivo
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <UploadCloud size={32} style={{ color: "var(--colors-accent)" }} />
+              <div className={styles.dragDropCopy}>
+                <p className={styles.dragDropTitle}>
+                  Arraste seu arquivo CSV, XLS ou XLSX aqui ou clique para selecionar
+                </p>
+                <p className={styles.dragDropHint}>
+                  Formatos aceitos: .csv, .xls e .xlsx (até 10 MB).
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+
+        {loadedFile && (
+          <div className={styles.uploadActionsRow}>
+            <Button
               type="button"
-              className={styles.manualToggle}
-              onClick={() => setShowManualEditor((prev) => !prev)}
-              aria-expanded={showManualEditor}
+              onClick={handleClear}
+              disabled={loading}
+              variant="secondary"
+              icon={<RotateCcw size={14} />}
             >
-              Ou colar CSV manualmente
-              {showManualEditor ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </button>
-
-            {showManualEditor && (
-              <div className={`${uiStyles.card} ${styles.sectionCard} ${styles.manualEditor}`}>
-                <span className="label">Conteúdo CSV</span>
-                <textarea
-                  className={styles.textarea}
-                  placeholder="Cole as linhas separadas por ponto e vírgula..."
-                  value={csvText}
-                  onChange={(e) => handleCsvChange(e.target.value)}
-                />
-
-                {formatError && <div className={styles.alertError}>{formatError}</div>}
-
-                <div className={styles.actionBar}>
-                  <button
-                    type="button"
-                    onClick={handleClear}
-                    disabled={loading || !csvText}
-                    className={`${uiStyles.btn} ${uiStyles.btnSecondary} ${styles.btnAction}`}
-                  >
-                    <RotateCcw size={14} />
-                    Limpar Tudo
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleProcess}
-                    disabled={loading || !canProcess}
-                    className={`${uiStyles.btn} ${uiStyles.btnPrimary} ${styles.btnAction}`}
-                    title={
-                      formatError
-                        ? formatError
-                        : !csvText.trim()
-                          ? "Informe um CSV válido para processar"
-                          : undefined
-                    }
-                  >
-                    <Play size={14} />
-                    {loading ? "Processando..." : "Processar Importação"}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {!showManualEditor && csvText.trim().length > 0 && (
-              <div className={`${uiStyles.card} ${styles.sectionCard}`}>
-                {formatError && <div className={styles.alertError}>{formatError}</div>}
-                <div className={styles.actionBar}>
-                  <button
-                    type="button"
-                    onClick={handleClear}
-                    disabled={loading}
-                    className={`${uiStyles.btn} ${uiStyles.btnSecondary} ${styles.btnAction}`}
-                  >
-                    <RotateCcw size={14} />
-                    Limpar Tudo
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleProcess}
-                    disabled={loading || !canProcess}
-                    className={`${uiStyles.btn} ${uiStyles.btnPrimary} ${styles.btnAction}`}
-                    title={formatError || undefined}
-                  >
-                    <Play size={14} />
-                    {loading ? "Processando..." : "Processar Importação"}
-                  </button>
-                </div>
-              </div>
-            )}
+              Limpar Arquivo
+            </Button>
+            <Button
+              type="button"
+              onClick={handleProcess}
+              loading={loading}
+              disabled={!canProcess}
+              variant="primary"
+              icon={<Play size={14} />}
+            >
+              Processar Importação
+            </Button>
           </div>
-        </div>
-
-        <div className={`${uiStyles.card} ${styles.sectionCard} ${styles.guideCard}`}>
-          <h3 className={styles.guideTitle}>Guia do Formato</h3>
-          <p className={styles.guideIntro}>
-            O CSV deve ser separado por <strong>ponto e vírgula (;)</strong> com as colunas na ordem
-            abaixo:
-          </p>
-          <ol className={styles.guideList}>
-            <li>CPF / CNPJ do Cliente</li>
-            <li>Nome do Cliente</li>
-            <li>E-mail</li>
-            <li>Celular</li>
-            <li>Valor do Título (decimal com vírgula)</li>
-            <li>Vencimento (AAAA-MM-DD)</li>
-            <li>Código do Vendedor</li>
-            <li>ID Único (opcional)</li>
-          </ol>
-        </div>
-
-        <div className={`${uiStyles.card} ${styles.sectionCard} ${styles.exampleCard}`}>
-          <div className={styles.sampleHeader}>
-            <span className="label">Exemplo de CSV</span>
-            <div className={styles.sampleHeaderActions}>
-              <button
-                type="button"
-                onClick={handleFillSample}
-                className={`${uiStyles.btn} ${uiStyles.btnSecondary} ${styles.btnCompact}`}
-                title="Preencher editor com exemplo — substitui o conteúdo pelo CSV abaixo"
-              >
-                Usar exemplo
-              </button>
-              <button
-                type="button"
-                onClick={handleCopyTemplate}
-                className={`${uiStyles.btn} ${uiStyles.btnSecondary} ${styles.btnIconOnly}`}
-                title="Copiar exemplo para a área de transferência"
-                aria-label="Copiar template CSV"
-              >
-                {copied ? (
-                  <ClipboardCheck size={16} style={{ color: "var(--status-paid-text)" }} />
-                ) : (
-                  <ClipboardCopy size={16} />
-                )}
-              </button>
-            </div>
-          </div>
-          <div className={styles.templateScroll}>
-            <pre className={styles.templateBox}>{sampleCSV}</pre>
-          </div>
-        </div>
+        )}
       </div>
 
+      {/* Painel de Resultado do Processamento */}
       {results && (
-        <div className={`${uiStyles.card} ${styles.sectionCard}`}>
+        <div className={styles.resultsCard}>
           <h2 className={styles.resultsTitle}>Resultado do Processamento</h2>
 
           <div className={styles.resultsGrid}>

@@ -10,6 +10,7 @@ import { ROUTES } from "@/lib/constants/routes";
 import { formatCPF } from "@/lib/formatters/cpf";
 import { formatCNPJ } from "@/lib/formatters/cnpj";
 import styles from "@/components/ui/ui.module.css";
+import { Button } from "@/components/ui/button";
 
 export default function EditTitlePage() {
   const router = useRouter();
@@ -255,22 +256,13 @@ export default function EditTitlePage() {
             marginTop: 8,
           }}
         >
-          <button
-            type="button"
-            onClick={() => router.back()}
-            disabled={saving}
-            className={`${styles.btn} ${styles.btnSecondary}`}
-          >
+          <Button type="button" onClick={() => router.back()} disabled={saving} variant="secondary">
             Voltar
-          </button>
+          </Button>
           {isEditable && (
-            <button
-              type="submit"
-              disabled={saving}
-              className={`${styles.btn} ${styles.btnPrimary}`}
-            >
-              {saving ? "Salvando..." : "Salvar Alterações"}
-            </button>
+            <Button type="submit" loading={saving} variant="primary">
+              Salvar Alterações
+            </Button>
           )}
         </div>
       </form>

@@ -11,6 +11,7 @@ import { usePermissions } from "@/hooks/use-permissions";
 import { PERMISSIONS } from "@/lib/constants/permissions";
 import { Edit2, Plus, Search, XCircle } from "lucide-react";
 import styles from "@/components/ui/ui.module.css";
+import { Button } from "@/components/ui/button";
 
 export default function RolesListPage() {
   const { hasPermission } = usePermissions();
@@ -167,10 +168,9 @@ export default function RolesListPage() {
         </div>
 
         {hasPermission(PERMISSIONS.CREATE_ROLE) && (
-          <button onClick={handleOpenCreate} className={`${styles.btn} ${styles.btnPrimary}`}>
-            <Plus size={16} />
-            <span>Novo Cargo</span>
-          </button>
+          <Button onClick={handleOpenCreate} variant="primary" icon={<Plus size={16} />}>
+            Novo Cargo
+          </Button>
         )}
       </div>
 
@@ -564,20 +564,17 @@ export default function RolesListPage() {
             </div>
 
             <div className={styles.modalFooter}>
-              <button
+              <Button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className={`${styles.btn} ${styles.btnSecondary}`}
+                variant="secondary"
+                disabled={saving}
               >
                 Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className={`${styles.btn} ${styles.btnPrimary}`}
-              >
-                {saving ? "Salvando..." : "Confirmar"}
-              </button>
+              </Button>
+              <Button type="submit" loading={saving} variant="primary">
+                Confirmar
+              </Button>
             </div>
           </form>
         </div>

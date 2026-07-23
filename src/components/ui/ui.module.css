@@ -7,19 +7,44 @@
   padding: 8px 16px;
   font-size: 0.875rem;
   font-weight: 600;
+  min-height: 38px;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
   cursor: pointer;
   transition:
     background-color 0.15s,
-    border-color 0.15s;
+    border-color 0.15s,
+    color 0.15s,
+    opacity 0.15s;
   gap: var(--space-xs);
   text-decoration: none;
+  user-select: none;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.btnSm {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  min-height: 28px;
+}
+
+.btnMd {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  min-height: 38px;
+}
+
+.btnLg {
+  padding: 12px 24px;
+  font-size: 1rem;
+  min-height: 46px;
 }
 
 .btnPrimary {
   background-color: var(--colors-primary);
   color: var(--colors-bg);
+  border-color: transparent;
 }
 
 .btnPrimary:hover:not(:disabled) {
@@ -47,8 +72,57 @@
   color: var(--colors-bg);
 }
 
+.btnOutline {
+  background-color: transparent;
+  border-color: var(--colors-border);
+  color: var(--colors-ink);
+}
+
+.btnOutline:hover:not(:disabled) {
+  background-color: var(--colors-surface);
+  border-color: var(--colors-muted);
+}
+
+.btnGhost {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--colors-ink);
+}
+
+.btnGhost:hover:not(:disabled) {
+  background-color: var(--colors-surface);
+}
+
+.btnIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.btnLoading {
+  cursor: not-allowed;
+}
+
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
@@ -140,7 +214,7 @@
   padding: 4px 8px;
   font-size: 0.75rem;
   font-weight: 600;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   gap: var(--space-xs);
   text-transform: uppercase;
   letter-spacing: 0.02em;

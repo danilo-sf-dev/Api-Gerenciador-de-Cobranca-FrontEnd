@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { useAuth } from "@/features/auth/context/auth-context";
@@ -10,7 +10,12 @@ import { usePathname } from "next/navigation";
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // If path is auth, don't show the layout shell
   const isAuthRoute =
@@ -19,9 +24,10 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
     pathname?.startsWith("/esqueci-minha-senha") ||
     pathname?.startsWith("/redefinir-senha");
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div
+        suppressHydrationWarning
         style={{
           display: "flex",
           width: "100vw",
@@ -31,6 +37,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
         }}
       >
         <div
+          suppressHydrationWarning
           style={{
             width: 24,
             height: 24,
@@ -55,11 +62,15 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   }
 
   if (isAuthRoute || !user) {
-    return <div style={{ width: "100%" }}>{children}</div>;
+    return (
+      <div suppressHydrationWarning style={{ width: "100%" }}>
+        {children}
+      </div>
+    );
   }
 
   return (
-    <div className={styles.container}>
+    <div suppressHydrationWarning className={styles.container}>
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       {sidebarOpen && <div className={styles.backdrop} onClick={() => setSidebarOpen(false)} />}
       <div className={styles.main}>

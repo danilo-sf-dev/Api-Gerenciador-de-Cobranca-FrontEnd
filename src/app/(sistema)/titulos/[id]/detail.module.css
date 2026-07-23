@@ -152,6 +152,17 @@
   width: 100%;
 }
 
+@keyframes treeNodeFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .treeNode {
   background-color: var(--colors-bg);
   border: 1px solid var(--colors-border);
@@ -167,6 +178,7 @@
   gap: var(--space-xs);
   cursor: pointer;
   position: relative;
+  animation: treeNodeFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .treeNode:hover {
@@ -176,7 +188,7 @@
 
 .treeNodeActive {
   border: 2px solid var(--colors-primary);
-  background-color: oklch(0.99 0.002 355.3);
+  background-color: var(--colors-primary-light);
 }
 
 .treeNodeTitle {
@@ -252,12 +264,21 @@
   flex-direction: column;
   align-items: center;
   position: relative;
+  animation: treeNodeFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .treeChildConnector {
   width: 2px;
   height: 12px;
   background-color: var(--colors-border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .treeNode,
+  .treeChildWrapper {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 /* ActionBar */
