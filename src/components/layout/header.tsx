@@ -14,15 +14,10 @@ export function Header({ onMenuClick }: HeaderProps) {
   const [theme, setTheme] = React.useState<"light" | "dark">("light");
 
   React.useEffect(() => {
-    const saved = localStorage.getItem("theme") as "light" | "dark";
-    if (saved) {
-      setTheme(saved);
-      document.documentElement.setAttribute("data-theme", saved);
-    } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setTheme(prefersDark ? "dark" : "light");
-      document.documentElement.setAttribute("data-theme", prefersDark ? "dark" : "light");
-    }
+    const saved = localStorage.getItem("theme");
+    const currentTheme = saved === "dark" ? "dark" : "light";
+    setTheme(currentTheme);
+    document.documentElement.setAttribute("data-theme", currentTheme);
   }, []);
 
   const toggleTheme = () => {

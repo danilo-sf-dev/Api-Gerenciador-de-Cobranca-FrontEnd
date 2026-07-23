@@ -1,4 +1,4 @@
-# Trustee Ledger — Frontend
+# Gestão Finance — Frontend
 
 > **Sistema de Gestão de Cobranças e Contas a Receber** — Interface web multi-tenant para controle de títulos, clientes, vendedores e fluxo financeiro de cobrança.
 
@@ -24,7 +24,7 @@
 
 ## Sobre o Projeto
 
-O **Trustee Ledger** é um sistema web de gerenciamento de cobranças voltado para pequenas e médias empresas (PMEs) que comercializam produtos ou serviços a prazo e necessitam de um controle estruturado sobre recebíveis e inadimplência.
+O **Gestão Finance** é um sistema web de gerenciamento de cobranças voltado para pequenas e médias empresas (PMEs) que comercializam produtos ou serviços a prazo e necessitam de um controle estruturado sobre recebíveis e inadimplência.
 
 O sistema centraliza **clientes, vendedores e o ciclo de vida completo dos títulos de cobrança** — incluindo cálculo automático de multas, juros e transições de estado — além de manter um histórico de auditoria rastreável para renegociações.
 
@@ -369,7 +369,7 @@ feature/xxx  →  developer  →  master
 
 ## Design System
 
-O Trustee Ledger adota um sistema de design chamado **"The Trustee Ledger"** — uma interface de alta densidade orientada a dados financeiros.
+O **Gestão Finance** adota um sistema de design com foco em clareza visual e alta densidade de dados financeiros.
 
 ### Paleta de Cores
 
