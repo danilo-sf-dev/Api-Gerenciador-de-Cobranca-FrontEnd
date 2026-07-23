@@ -13,6 +13,7 @@ import { PERMISSIONS } from "@/lib/constants/permissions";
 import { formatDate, formatDateTime } from "@/lib/formatters/date";
 import { UserPlus, UserCog, RefreshCw, XCircle, Search } from "lucide-react";
 import styles from "@/components/ui/ui.module.css";
+import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/feedback/confirm-dialog";
 import { Toast } from "@/components/feedback/toast";
 
@@ -353,16 +354,16 @@ export default function UsersListPage() {
         </div>
 
         {hasPermission(PERMISSIONS.INVITE_USER) && (
-          <button
+          <Button
             onClick={() => {
               setInviteError("");
               setIsInviteOpen(true);
             }}
-            className={`${styles.btn} ${styles.btnPrimary}`}
+            variant="primary"
+            icon={<UserPlus size={16} />}
           >
-            <UserPlus size={16} />
-            <span>Convidar Usuário</span>
-          </button>
+            Convidar Usuário
+          </Button>
         )}
       </div>
 
@@ -772,20 +773,17 @@ export default function UsersListPage() {
             </div>
 
             <div className={styles.modalFooter}>
-              <button
+              <Button
                 type="button"
                 onClick={() => setIsInviteOpen(false)}
-                className={`${styles.btn} ${styles.btnSecondary}`}
+                variant="secondary"
+                disabled={inviteLoading}
               >
                 Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={inviteLoading}
-                className={`${styles.btn} ${styles.btnPrimary}`}
-              >
-                {inviteLoading ? "Enviando..." : "Enviar Convite"}
-              </button>
+              </Button>
+              <Button type="submit" loading={inviteLoading} variant="primary">
+                Enviar Convite
+              </Button>
             </div>
           </form>
         </div>
@@ -962,20 +960,17 @@ export default function UsersListPage() {
             </div>
 
             <div className={styles.modalFooter}>
-              <button
+              <Button
                 type="button"
                 onClick={() => setIsRoleOpen(false)}
-                className={`${styles.btn} ${styles.btnSecondary}`}
+                variant="secondary"
+                disabled={roleLoading}
               >
                 Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={roleLoading}
-                className={`${styles.btn} ${styles.btnPrimary}`}
-              >
-                {roleLoading ? "Salvando..." : "Confirmar Alteração"}
-              </button>
+              </Button>
+              <Button type="submit" loading={roleLoading} variant="primary">
+                Confirmar Alteração
+              </Button>
             </div>
           </form>
         </div>

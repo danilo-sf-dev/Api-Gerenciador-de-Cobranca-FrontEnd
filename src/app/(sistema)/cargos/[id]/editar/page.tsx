@@ -6,6 +6,7 @@ import { RolesService } from "@/features/cargos/services/roles.service";
 import { FormField } from "@/components/forms/form-field";
 import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
+import { Button } from "@/components/ui/button";
 
 export default function EditRolePage() {
   const router = useRouter();
@@ -185,17 +186,17 @@ export default function EditRolePage() {
             marginTop: 8,
           }}
         >
-          <button
+          <Button
             type="button"
             onClick={() => router.push(ROUTES.ROLES)}
             disabled={saving}
-            className={`${styles.btn} ${styles.btnSecondary}`}
+            variant="secondary"
           >
             Cancelar
-          </button>
-          <button type="submit" disabled={saving} className={`${styles.btn} ${styles.btnPrimary}`}>
-            {saving ? "Salvando..." : "Salvar Alterações"}
-          </button>
+          </Button>
+          <Button type="submit" loading={saving} variant="primary">
+            Salvar Alterações
+          </Button>
         </div>
       </form>
     </div>

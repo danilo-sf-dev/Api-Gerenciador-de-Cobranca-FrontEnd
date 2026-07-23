@@ -143,6 +143,11 @@
   padding-right: var(--space-xs);
 }
 
+.roleSelect option {
+  background-color: var(--colors-surface);
+  color: var(--colors-ink);
+}
+
 .roleSelect:focus {
   outline: none;
 }

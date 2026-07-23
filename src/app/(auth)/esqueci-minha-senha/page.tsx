@@ -5,6 +5,7 @@ import { AuthService } from "@/features/auth/services/auth.service";
 import { ROUTES } from "@/lib/constants/routes";
 import Link from "next/link";
 import styles from "@/components/ui/ui.module.css";
+import { Button } from "@/components/ui/button";
 
 export default function EsqueciSenhaPage() {
   const [email, setEmail] = useState("");
@@ -87,14 +88,14 @@ export default function EsqueciSenhaPage() {
               />
             </div>
 
-            <button
+            <Button
               type="submit"
-              disabled={loading}
-              className={`${styles.btn} ${styles.btnPrimary}`}
+              loading={loading}
+              variant="primary"
               style={{ width: "100%", height: 40 }}
             >
-              {loading ? "Enviando..." : "Enviar Link de Recuperação"}
-            </button>
+              Enviar Link de Recuperação
+            </Button>
 
             <Link
               href={ROUTES.LOGIN}

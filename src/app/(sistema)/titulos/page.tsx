@@ -28,6 +28,7 @@ import { useSearchParams } from "next/navigation";
 import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
 import pageStyles from "./titulos.module.css";
+import { Button } from "@/components/ui/button";
 import { CustomerSearchSelect } from "@/components/forms/customer-search-select";
 import { CurrencyInput } from "@/components/forms/currency-input";
 
@@ -278,14 +279,14 @@ export default function TitlesListPage() {
               <UploadCloud size={16} />
               <span>Importar Títulos</span>
             </Link>
-            <button
+            <Button
               onClick={handleOpenCreate}
-              className={`${styles.btn} ${styles.btnPrimary}`}
+              variant="primary"
+              icon={<Plus size={16} />}
               type="button"
             >
-              <Plus size={16} />
-              <span>Novo Título</span>
-            </button>
+              Novo Título
+            </Button>
           </div>
         )}
       </div>
@@ -887,20 +888,17 @@ export default function TitlesListPage() {
             </div>
 
             <div className={styles.modalFooter}>
-              <button
+              <Button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className={`${styles.btn} ${styles.btnSecondary}`}
+                variant="secondary"
+                disabled={saving}
               >
                 Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className={`${styles.btn} ${styles.btnPrimary}`}
-              >
-                {saving ? "Salvando..." : "Confirmar Título"}
-              </button>
+              </Button>
+              <Button type="submit" loading={saving} variant="primary">
+                Confirmar Título
+              </Button>
             </div>
           </form>
         </div>

@@ -6,6 +6,7 @@ import { AuthService } from "@/features/auth/services/auth.service";
 import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function AtivarContaPage() {
   const params = useParams();
@@ -176,24 +177,25 @@ export default function AtivarContaPage() {
               />
             </div>
 
-            <button
+            <Button
               type="submit"
-              disabled={loading}
-              className={`${styles.btn} ${styles.btnPrimary}`}
+              loading={loading}
+              variant="primary"
               style={{ width: "100%", height: 40, marginTop: 8 }}
             >
-              {loading ? "Ativando..." : "Ativar Minha Conta"}
-            </button>
+              Ativar Minha Conta
+            </Button>
           </form>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <button
+            <Button
+              type="button"
               onClick={handleRequestNewInvite}
-              className={`${styles.btn} ${styles.btnPrimary}`}
+              variant="primary"
               style={{ width: "100%", height: 40 }}
             >
               Solicitar Novo Convite
-            </button>
+            </Button>
             <Link
               href={ROUTES.LOGIN}
               className={`${styles.btn} ${styles.btnSecondary}`}

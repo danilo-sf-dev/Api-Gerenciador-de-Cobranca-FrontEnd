@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import styles from "@/components/ui/ui.module.css";
 import pageStyles from "./renegociar.module.css";
+import { Button } from "@/components/ui/button";
 
 export default function RenegotiateTitlePage() {
   const params = useParams();
@@ -323,16 +324,16 @@ export default function RenegotiateTitlePage() {
             <div className={pageStyles.renegCard}>
               <div className={pageStyles.instHeader}>
                 <span className={pageStyles.instTitle}>Parcelas da Renegociação</span>
-                <button
+                <Button
                   type="button"
                   onClick={distributeEqually}
-                  className={`${styles.btn} ${styles.btnSecondary}`}
-                  style={{ padding: "6px 12px", fontSize: "0.75rem" }}
+                  variant="secondary"
+                  size="sm"
+                  icon={<Sparkles size={14} style={{ color: "var(--colors-primary)" }} />}
                   title="Divide o valor total igualmente entre as parcelas criadas"
                 >
-                  <Sparkles size={14} style={{ color: "var(--colors-primary)" }} />
-                  <span>Distribuir Igualmente</span>
-                </button>
+                  Distribuir Igualmente
+                </Button>
               </div>
 
               <div className={pageStyles.instList}>
@@ -380,15 +381,15 @@ export default function RenegotiateTitlePage() {
               </div>
 
               <div>
-                <button
+                <Button
                   type="button"
                   onClick={handleAddInstallment}
-                  className={`${styles.btn} ${styles.btnSecondary}`}
+                  variant="secondary"
+                  icon={<Plus size={16} />}
                   style={{ width: "100%", borderStyle: "dashed" }}
                 >
-                  <Plus size={16} />
-                  <span>Adicionar Parcela</span>
-                </button>
+                  Adicionar Parcela
+                </Button>
               </div>
             </div>
 
@@ -446,15 +447,16 @@ export default function RenegotiateTitlePage() {
                 >
                   Cancelar
                 </Link>
-                <button
+                <Button
                   type="submit"
-                  className={`${styles.btn} ${styles.btnPrimary}`}
+                  variant="primary"
+                  loading={submitting}
+                  disabled={!isBalanced || !reason.trim()}
+                  icon={<Check size={16} />}
                   style={{ flex: 2 }}
-                  disabled={submitting || !isBalanced || !reason.trim()}
                 >
-                  <Check size={16} />
-                  <span>{submitting ? "Processando..." : "Confirmar Acordo"}</span>
-                </button>
+                  Confirmar Acordo
+                </Button>
               </div>
             </div>
           </div>

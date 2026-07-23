@@ -84,16 +84,16 @@
 }
 
 .lastImportGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--space-sm) var(--space-lg);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm) var(--space-xl);
 }
 
 .lastImportItem {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-xs);
   font-size: 0.8125rem;
 }
 
@@ -347,6 +347,17 @@
   gap: var(--space-md);
 }
 
+@keyframes summaryCardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .summaryCard {
   padding: var(--space-md);
   border-radius: var(--radius-md);
@@ -354,6 +365,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
+  animation: summaryCardFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition:
+    opacity 0.2s ease-in-out,
+    transform 0.2s ease-in-out;
 }
 
 .summaryCardSuccess {
@@ -438,8 +453,20 @@
   border-radius: var(--radius-md);
 }
 
+@keyframes rejectedRowFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .rejectedRow {
   background-color: var(--status-late-bg);
+  animation: rejectedRowFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .cellReason {
@@ -468,5 +495,13 @@
   }
   .lastImportGrid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summaryCard,
+  .rejectedRow {
+    animation: none !important;
+    transition: none !important;
   }
 }

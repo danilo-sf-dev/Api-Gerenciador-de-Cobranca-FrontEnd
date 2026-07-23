@@ -18,6 +18,7 @@ import {
 import styles from "./importar.module.css";
 import uiStyles from "@/components/ui/ui.module.css";
 import tableStyles from "@/components/data-table/data-table.module.css";
+import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/constants/routes";
 import { validateCsvFormat, formatFileSize } from "./validate-csv";
 import { downloadExcelTemplate, downloadCsvTemplate } from "./download-templates";
@@ -175,7 +176,7 @@ export default function ImportTitlesPage() {
           </div>
           <div className={styles.lastImportItem}>
             <span className={styles.lastImportLabel}>Data:</span>
-            <span className={styles.lastImportValue}>22/07/2026, 14:30</span>
+            <span className={`${styles.lastImportValue} tabular-nums`}>22/07/2026, 14:30</span>
           </div>
           <div className={styles.lastImportItem}>
             <span className={styles.lastImportLabel}>Status:</span>
@@ -222,22 +223,22 @@ export default function ImportTitlesPage() {
         </div>
 
         <div className={styles.downloadActionsRow}>
-          <button
+          <Button
             type="button"
             onClick={downloadExcelTemplate}
-            className={`${uiStyles.btn} ${uiStyles.btnPrimary}`}
+            variant="primary"
+            icon={<FileSpreadsheet size={16} />}
           >
-            <FileSpreadsheet size={16} />
-            <span>Baixar Template Excel (.xlsx)</span>
-          </button>
-          <button
+            Baixar Template Excel (.xlsx)
+          </Button>
+          <Button
             type="button"
             onClick={downloadCsvTemplate}
-            className={`${uiStyles.btn} ${uiStyles.btnSecondary}`}
+            variant="secondary"
+            icon={<FileText size={16} />}
           >
-            <FileText size={16} />
-            <span>Baixar Template CSV (.csv)</span>
-          </button>
+            Baixar Template CSV (.csv)
+          </Button>
         </div>
 
         <button type="button" onClick={handleScrollToUpload} className={styles.alreadyFilledLink}>
@@ -303,24 +304,25 @@ export default function ImportTitlesPage() {
 
         {loadedFile && (
           <div className={styles.uploadActionsRow}>
-            <button
+            <Button
               type="button"
               onClick={handleClear}
               disabled={loading}
-              className={`${uiStyles.btn} ${uiStyles.btnSecondary}`}
+              variant="secondary"
+              icon={<RotateCcw size={14} />}
             >
-              <RotateCcw size={14} />
-              <span>Limpar Arquivo</span>
-            </button>
-            <button
+              Limpar Arquivo
+            </Button>
+            <Button
               type="button"
               onClick={handleProcess}
-              disabled={loading || !canProcess}
-              className={`${uiStyles.btn} ${uiStyles.btnPrimary}`}
+              loading={loading}
+              disabled={!canProcess}
+              variant="primary"
+              icon={<Play size={14} />}
             >
-              <Play size={14} />
-              <span>{loading ? "Processando..." : "Processar Importação"}</span>
-            </button>
+              Processar Importação
+            </Button>
           </div>
         )}
       </div>

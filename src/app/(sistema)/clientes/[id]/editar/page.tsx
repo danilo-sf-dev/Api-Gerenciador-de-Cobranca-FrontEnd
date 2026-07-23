@@ -11,6 +11,7 @@ import { SellerSearchSelect } from "@/components/forms/seller-search-select";
 import { validateDocument } from "@/lib/validators/cnpj";
 import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
+import { Button } from "@/components/ui/button";
 
 export default function EditCustomerPage() {
   const router = useRouter();
@@ -246,17 +247,17 @@ export default function EditCustomerPage() {
             marginTop: 8,
           }}
         >
-          <button
+          <Button
             type="button"
             onClick={() => router.push(ROUTES.CUSTOMERS)}
             disabled={saving}
-            className={`${styles.btn} ${styles.btnSecondary}`}
+            variant="secondary"
           >
             Cancelar
-          </button>
-          <button type="submit" disabled={saving} className={`${styles.btn} ${styles.btnPrimary}`}>
-            {saving ? "Salvando..." : "Salvar Alterações"}
-          </button>
+          </Button>
+          <Button type="submit" loading={saving} variant="primary">
+            Salvar Alterações
+          </Button>
         </div>
       </form>
     </div>

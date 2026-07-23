@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ROUTES } from "@/lib/constants/routes";
 import styles from "@/components/ui/ui.module.css";
+import { Button } from "@/components/ui/button";
 
 export default function RedefinirSenhaPage() {
   const router = useRouter();
@@ -125,14 +126,14 @@ export default function RedefinirSenhaPage() {
             />
           </div>
 
-          <button
+          <Button
             type="submit"
-            disabled={loading}
-            className={`${styles.btn} ${styles.btnPrimary}`}
+            loading={loading}
+            variant="primary"
             style={{ width: "100%", height: 40 }}
           >
-            {loading ? "Redefinindo..." : "Salvar Nova Senha"}
-          </button>
+            Salvar Nova Senha
+          </Button>
         </form>
       </div>
     </div>

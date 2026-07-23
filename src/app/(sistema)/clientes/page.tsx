@@ -15,6 +15,7 @@ import { formatPhone } from "@/lib/formatters/phone";
 import { formatDate } from "@/lib/formatters/date";
 import { Edit2, Plus, Search, XCircle } from "lucide-react";
 import styles from "@/components/ui/ui.module.css";
+import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/forms/form-field";
 import { CpfInput } from "@/components/forms/cpf-input";
 import { CnpjInput } from "@/components/forms/cnpj-input";
@@ -209,10 +210,9 @@ export default function CustomersListPage() {
         </div>
 
         {hasPermission(PERMISSIONS.CREATE_CUSTOMER) && (
-          <button onClick={handleOpenCreate} className={`${styles.btn} ${styles.btnPrimary}`}>
-            <Plus size={16} />
-            <span>Novo Cliente</span>
-          </button>
+          <Button onClick={handleOpenCreate} variant="primary" icon={<Plus size={16} />}>
+            Novo Cliente
+          </Button>
         )}
       </div>
 
@@ -544,20 +544,17 @@ export default function CustomersListPage() {
             </div>
 
             <div className={styles.modalFooter}>
-              <button
+              <Button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className={`${styles.btn} ${styles.btnSecondary}`}
+                variant="secondary"
+                disabled={saving}
               >
                 Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className={`${styles.btn} ${styles.btnPrimary}`}
-              >
-                {saving ? "Salvando..." : "Confirmar"}
-              </button>
+              </Button>
+              <Button type="submit" loading={saving} variant="primary">
+                Confirmar
+              </Button>
             </div>
           </form>
         </div>
