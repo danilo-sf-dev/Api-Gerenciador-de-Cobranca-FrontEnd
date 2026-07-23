@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { PlusCircle, FileSpreadsheet } from "lucide-react";
+import { Plus, UploadCloud } from "lucide-react";
 import { ROUTES } from "@/lib/constants/routes";
 import uiStyles from "@/components/ui/ui.module.css";
 
@@ -21,7 +21,7 @@ export function QuickActionsCard() {
             border: "1px solid var(--colors-border)",
           }}
         >
-          <PlusCircle size={16} style={{ color: "var(--colors-primary)" }} />
+          <Plus size={16} style={{ color: "var(--colors-primary)" }} />
           <span>Novo Título</span>
         </Link>
         <Link
@@ -34,8 +34,8 @@ export function QuickActionsCard() {
             border: "1px solid var(--colors-border)",
           }}
         >
-          <FileSpreadsheet size={16} style={{ color: "var(--colors-primary)" }} />
-          <span>Importar Planilha</span>
+          <UploadCloud size={16} style={{ color: "var(--colors-primary)" }} />
+          <span>Importar Títulos</span>
         </Link>
       </div>
     </div>

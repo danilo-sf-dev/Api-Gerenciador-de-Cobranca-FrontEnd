@@ -4,7 +4,13 @@ export const EXPECTED_CSV_HEADERS = [
   "EmailCliente",
   "CelularCliente",
   "ValorOriginal",
+  "NumeroPedido",
+  "NumeroNotaFiscal",
+  "TipoPagamento",
+  "QuantidadeParcelas",
+  "DataEmissao",
   "DataVencimento",
+  "IntervaloDiasParcelas",
   "CodigoVendedor",
   "IDTituloUnico",
 ] as const;

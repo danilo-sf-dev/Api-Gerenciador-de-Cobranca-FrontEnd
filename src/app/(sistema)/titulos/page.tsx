@@ -13,7 +13,16 @@ import { formatCPF } from "@/lib/formatters/cpf";
 import { formatCNPJ } from "@/lib/formatters/cnpj";
 import { formatDate } from "@/lib/formatters/date";
 import { formatCurrency } from "@/lib/formatters/currency";
-import { Search, Eye, Calendar, RotateCcw, Plus, XCircle, FileText } from "lucide-react";
+import {
+  Search,
+  Eye,
+  Calendar,
+  RotateCcw,
+  Plus,
+  XCircle,
+  FileText,
+  UploadCloud,
+} from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ROUTES } from "@/lib/constants/routes";
@@ -261,14 +270,23 @@ export default function TitlesListPage() {
         </div>
 
         {hasPermission(PERMISSIONS.CREATE_TITLE) && (
-          <button
-            onClick={handleOpenCreate}
-            className={`${styles.btn} ${styles.btnPrimary}`}
-            type="button"
-          >
-            <Plus size={16} />
-            <span>Novo Título</span>
-          </button>
+          <div style={{ display: "flex", gap: "var(--space-sm)", alignItems: "center" }}>
+            <Link
+              href={`${ROUTES.TITLES}/importar`}
+              className={`${styles.btn} ${styles.btnSecondary}`}
+            >
+              <UploadCloud size={16} />
+              <span>Importar Títulos</span>
+            </Link>
+            <button
+              onClick={handleOpenCreate}
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              type="button"
+            >
+              <Plus size={16} />
+              <span>Novo Título</span>
+            </button>
+          </div>
         )}
       </div>
 
