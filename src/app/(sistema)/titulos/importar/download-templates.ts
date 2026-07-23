@@ -19,107 +19,131 @@ export const TEMPLATE_HEADERS = [
 
 export const TEMPLATE_EXAMPLES = [
   [
-    "12.345.678/0001-90",
+    "12345678000190",
     "Mercado Pague Menos Ltda",
     "financeiro@paguemenos.com",
-    "(11) 3344-5566",
+    "1133445566",
     "2500,50",
-    "PED-1092",
-    "NF-4501",
+    "1092",
+    "4501",
     "PIX",
     "1",
     "2026-07-20",
     "2026-08-30",
     "",
     "4821",
-    "imp-pix-1001",
+    "1001",
   ],
   [
-    "456.789.012-34",
+    "45678901234",
     "Roberto de Souza",
     "roberto.souza@gmail.com",
-    "(11) 99887-7665",
+    "11998877665",
     "1250,00",
-    "PED-1093",
-    "NF-4502",
+    "1093",
+    "4502",
     "BOLETO",
     "3",
     "2026-07-20",
     "2026-08-25",
     "30",
     "8912",
-    "imp-bol-1002",
+    "1002",
   ],
   [
-    "789.123.456-00",
+    "78912345600",
     "Ana Carolina Ferreira",
     "ana.ferreira@empresa.com.br",
-    "(21) 97766-5544",
+    "21977665544",
     "4800,00",
-    "PED-1094",
-    "NF-4503",
+    "1094",
+    "4503",
     "CARD",
     "6",
     "2026-07-20",
     "2026-08-20",
     "30",
     "4821",
-    "imp-card-1003",
+    "1003",
   ],
 ];
 
-const INSTRUCTIONS_TEXT = `IMPORTAÇÃO DE TÍTULOS - INSTRUÇÕES
-
-📘 COMO USAR ESTE TEMPLATE:
-
-✅ OPÇÃO 1 - USO SIMPLES (RECOMENDADO):
-   1. Vá para a planilha 'Template'
-   2. Preencha seus dados na planilha 'Template'
-   3. Salve o arquivo (.xlsx ou .xls)
-   4. Faça upload no Importador de Títulos do sistema
-   5. Pronto! Os títulos serão processados automaticamente
-
-✅ OPÇÃO 2 - PERSONALIZAÇÃO:
-   - Você pode excluir as planilhas 'Instruções' e 'Exemplo'
-   - Você pode renomear a planilha 'Template' para qualquer nome
-   - O sistema detectará automaticamente a planilha com dados
-
-📌 REGRAS DE PREENCHIMENTO:
-   - Todos os campos marcados com * são obrigatórios
-   - Não deixe linhas em branco entre os dados
-   - Preencha apenas na planilha 'Template' (ou sua planilha renomeada)
-
-📋 FORMATO DOS DADOS:
- 1. CPF/CNPJ aceita formatos: 123.456.789-09, 12345678909, 12.345.678/0001-90
- 2. Valor aceita formatos: 2500.50, 2500,50 ou 2.500,50
- 3. Datas devem estar no formato AAAA-MM-DD (ex: 2026-08-30)
- 4. Tipo de Pagamento: PIX, BOLETO ou CARD
- 5. Parcelas: PIX=1 (obrigatório), BOLETO=1 a 5, CARD=1 a 12
- 6. Intervalo entre Parcelas: 7, 15, 30 ou 60 dias (obrigatório quando Parcelas > 1)
- 7. Código do Vendedor deve ser de um vendedor já cadastrado e ativo no sistema
-
-⚠️ VALIDAÇÕES:
-- Documento do cliente deve ser um CPF ou CNPJ válido
-- Se o cliente não existir no sistema, será cadastrado automaticamente
-- Se o vendedor não existir ou estiver inativo, a linha será rejeitada
-- Valor Original deve ser maior que zero
-- Data de Vencimento não pode ser anterior à Data de Emissão
-- Nº Pedido e Nº Nota Fiscal são obrigatórios
-- PIX só permite 1 parcela (À Vista)
-- Boleto permite no máximo 5 parcelas
-- Cartão permite no máximo 12 parcelas
-
-💡 DICA:
-   - Veja a planilha 'Exemplo' para referência de preenchimento
-   - O sistema aceita o arquivo mesmo se você excluir outras planilhas
-   - O sistema aceita .csv, .xls e .xlsx`;
+/**
+ * Linhas da aba "Instruções" do template Excel.
+ *
+ * Cada entrada é uma row na coluna A da planilha.
+ * `null` gera uma linha em branco (separador visual entre seções).
+ *
+ * IMPORTANTE — Portabilidade para o Backend:
+ * Quando o backend Java (Apache POI) assumir a geração do template,
+ * este array deve ser replicado como List<String> onde null = row vazia.
+ * A row 0 (título) deve receber estilo bold + fonte 12pt.
+ */
+const INSTRUCTIONS_ROWS: (string | null)[] = [
+  // ── Título ──
+  "IMPORTAÇÃO DE TÍTULOS - INSTRUÇÕES",
+  null,
+  // ── Como usar ──
+  "📘 COMO USAR ESTE TEMPLATE:",
+  null,
+  "✅ OPÇÃO 1 - USO SIMPLES (RECOMENDADO):",
+  "   1. Vá para a planilha 'Template'",
+  "   2. Preencha seus dados na planilha 'Template'",
+  "   3. Salve o arquivo (.xlsx ou .xls)",
+  "   4. Faça upload no Importador de Títulos do sistema",
+  "   5. Pronto! Os títulos serão processados automaticamente",
+  null,
+  "✅ OPÇÃO 2 - PERSONALIZAÇÃO:",
+  "   - Você pode excluir as planilhas 'Instruções' e 'Exemplo'",
+  "   - Você pode renomear a planilha 'Template' para qualquer nome",
+  "   - O sistema detectará automaticamente a planilha com dados",
+  null,
+  // ── Regras ──
+  "📌 REGRAS DE PREENCHIMENTO:",
+  "   - Todos os campos marcados com * são obrigatórios",
+  "   - Não deixe linhas em branco entre os dados",
+  "   - Preencha apenas na planilha 'Template' (ou sua planilha renomeada)",
+  null,
+  // ── Formato dos dados ──
+  "📋 FORMATO DOS DADOS:",
+  "   1. CPF/CNPJ (DocumentoCliente) deve conter apenas números (ex: 45678901234 ou 12345678000190)",
+  "   2. Celular (CelularCliente) deve conter apenas números (ex: 1133334578 ou 11999998888)",
+  "   3. Número do Pedido (NumeroPedido) deve conter apenas números (ex: 1092)",
+  "   4. Número da Nota Fiscal (NumeroNotaFiscal) deve conter apenas números (ex: 4501)",
+  "   5. ID Único do Título (IDTituloUnico) deve conter apenas números (ex: 1001)",
+  "   6. Valor (ValorOriginal) aceita formatos: 2500.50 ou 2500,50",
+  "   7. Datas devem estar no formato AAAA-MM-DD (ex: 2026-08-30)",
+  "   8. Tipo de Pagamento: PIX, BOLETO ou CARD",
+  "   9. Parcelas: PIX=1 (obrigatório), BOLETO=1 a 5, CARD=1 a 12",
+  "   10. Intervalo entre Parcelas: 7, 15, 30 ou 60 dias (obrigatório quando Parcelas > 1)",
+  "   11. Código do Vendedor deve ser de um vendedor já cadastrado e ativo no sistema",
+  null,
+  // ── Validações ──
+  "⚠️ VALIDAÇÕES:",
+  "   - Documento do cliente deve ser um CPF ou CNPJ válido (apenas dígitos)",
+  "   - Se o cliente não existir no sistema, será cadastrado automaticamente",
+  "   - Se o vendedor não existir ou estiver inativo, a linha será rejeitada",
+  "   - Valor Original deve ser maior que zero",
+  "   - Data de Vencimento não pode ser anterior à Data de Emissão",
+  "   - Nº Pedido e Nº Nota Fiscal são obrigatórios (apenas dígitos)",
+  "   - PIX só permite 1 parcela (À Vista)",
+  "   - Boleto permite no máximo 5 parcelas",
+  "   - Cartão permite no máximo 12 parcelas",
+  null,
+  // ── Dicas ──
+  "💡 DICA:",
+  "   - Veja a planilha 'Exemplo' para referência de preenchimento",
+  "   - O sistema aceita o arquivo mesmo se você excluir outras planilhas",
+  "   - O sistema aceita .csv, .xls e .xlsx",
+];
 
 export function downloadExcelTemplate() {
   const wb = XLSX.utils.book_new();
 
-  // Aba 1: Instruções
-  const wsInstrucoes = XLSX.utils.aoa_to_sheet([[INSTRUCTIONS_TEXT]]);
-  wsInstrucoes["!cols"] = [{ wch: 100 }];
+  // Aba 1: Instruções — cada entrada do array vira uma row na coluna A
+  const instructionsAoa = INSTRUCTIONS_ROWS.map((row) => [row ?? ""]);
+  const wsInstrucoes = XLSX.utils.aoa_to_sheet(instructionsAoa);
+  wsInstrucoes["!cols"] = [{ wch: 90 }];
 
   // Aba 2: Template (vazio apenas com cabeçalhos)
   const wsTemplate = XLSX.utils.aoa_to_sheet([TEMPLATE_HEADERS]);

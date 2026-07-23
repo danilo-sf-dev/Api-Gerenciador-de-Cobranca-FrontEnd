@@ -114,7 +114,7 @@ export default function ImportTitlesPage() {
       const textToProcess =
         csvText ||
         (loadedFile
-          ? "DocumentoCliente;NomeCliente;EmailCliente;CelularCliente;ValorOriginal;NumeroPedido;NumeroNotaFiscal;TipoPagamento;QuantidadeParcelas;DataEmissao;DataVencimento;IntervaloDiasParcelas;CodigoVendedor;IDTituloUnico\n12.345.678/0001-90;Mercado Pague Menos Ltda;financeiro@paguemenos.com;(11) 3344-5566;2500,50;PED-1092;NF-4501;PIX;1;2026-07-20;2026-08-30;;4821;imp-pix-1001"
+          ? "DocumentoCliente;NomeCliente;EmailCliente;CelularCliente;ValorOriginal;NumeroPedido;NumeroNotaFiscal;TipoPagamento;QuantidadeParcelas;DataEmissao;DataVencimento;IntervaloDiasParcelas;CodigoVendedor;IDTituloUnico\n12345678000190;Mercado Pague Menos Ltda;financeiro@paguemenos.com;1133445566;2500,50;1092;4501;PIX;1;2026-07-20;2026-08-30;;4821;1001"
           : "");
       const response = await TitlesService.importTitles(textToProcess);
       setResults(response);
